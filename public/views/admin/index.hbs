@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}}</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .dashboard-card {
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-5px);
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100 font-sans flex h-screen flex-col md:flex-row">
+  {{> adminSidebar}}
+  <main class="flex-grow p-6 md:p-12">
+    
+    <div class="max-w-full mx-auto">
+        
+      <header class="mb-10">
+        <h1 class="text-3xl font-bold text-slate-800 mb-2">مرحباً بك في لوحة التحكم</h1>
+        <p class="text-slate-600">تفقد آخر الإحصائيات والتحديثات</p>
+      </header>
+
+      <!-- Statistics Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <!-- Card -->
+        <div class="dashboard-card bg-white rounded-xl shadow p-6">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm text-gray-500 mb-1">المستخدمين</p>
+              <h3 class="text-2xl font-bold text-gray-800" id="totalUsers">0</h3>
+            </div>
+            <div class="bg-blue-100 p-3 rounded-xl">
+              <!-- Icon -->
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-card bg-white rounded-xl shadow p-6">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm text-gray-500 mb-1">الحرفيين</p>
+              <h3 class="text-2xl font-bold text-gray-800" id="artisans">0</h3>
+            </div>
+            <div class="bg-green-100 p-3 rounded-xl">
+              <!-- Icon -->
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-card bg-white rounded-xl shadow p-6">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm text-gray-500 mb-1">الحرفاء</p>
+              <h3 class="text-2xl font-bold text-gray-800" id="clients">0</h3>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-xl">
+              <!-- Icon -->
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-card bg-white rounded-xl shadow p-6">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm text-gray-500 mb-1">التقارير</p>
+              <h3 class="text-2xl font-bold text-gray-800" id="messages">0</h3>
+            </div>
+            <div class="bg-yellow-100 p-3 rounded-xl">
+              <!-- Icon -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Reports Table -->
+      <div class="bg-white rounded-xl shadow p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-gray-800">أحدث التقارير</h2>
+          <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">تحديث</button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-right border-collapse">
+            <thead class="bg-gray-50 border-b">
+              <tr>
+                <th class="px-6 py-3 text-gray-500 font-semibold">معرف الحرفي</th>
+                <th class="px-6 py-3 text-gray-500 font-semibold">مشكلة في التنقل</th>
+                <th class="px-6 py-3 text-gray-500 font-semibold">مشكلة في التصميم</th>
+                <th class="px-6 py-3 text-gray-500 font-semibold">التعليقات</th>
+                <th class="px-6 py-3 text-gray-500 font-semibold">التاريخ</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTableBody" class="divide-y divide-gray-200">
+              <!-- Dynamic Content -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function loadDashboardData() {
+      try {
+        const response = await fetch('/admin/dashboard-data');
+        if (!response.ok) throw new Error('Network error');
+        const data = await response.json();
+
+        document.getElementById('totalUsers').textContent = data.totalUsers;
+        document.getElementById('artisans').textContent = data.artisans;
+        document.getElementById('clients').textContent = data.clients;
+        document.getElementById('messages').textContent = data.messages;
+
+        const reportsTableBody = document.getElementById('reportsTableBody');
+        reportsTableBody.innerHTML = '';
+        data.reports.forEach(report => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td class="px-6 py-4 text-gray-700">${report.artisan_id}</td>
+            <td class="px-6 py-4 text-gray-700">${report.navigation_issue ? 'نعم' : 'لا'}</td>
+            <td class="px-6 py-4 text-gray-700">${report.design_issue ? 'نعم' : 'لا'}</td>
+            <td class="px-6 py-4 text-gray-700">${report.comments || '-'}</td>
+            <td class="px-6 py-4 text-gray-700">${new Date(report.created_at).toLocaleDateString('ar-TN')}</td>
+          `;
+          reportsTableBody.appendChild(row);
+        });
+      } catch (err) {
+        console.error('Dashboard error:', err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadDashboardData);
+  </script>
+
+</body>
+
+</html>

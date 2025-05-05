@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حجوزاتي - TN M3allim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Tajawal', sans-serif;
+        }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+
+<body class="bg-gray-50" x-data="bookingsApp()">
+    {{> header }}
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-5xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900">حجوزاتي</h1>
+                <p class="mt-2 text-gray-600">إدارة حجوزاتك مع الحرفيين</p>
+            </div>
+
+            <!-- Alert Message -->
+            <template x-if="message">
+                <div x-bind:class="{'bg-green-100 text-green-800': message.type === 'success', 'bg-red-100 text-red-800': message.type === 'error'}"
+                     class="p-4 rounded-lg mb-6"
+                     x-text="message.text">
+                </div>
+            </template>
+
+            <!-- Bookings List -->
+            {{#if bookings.length}}
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="divide-y divide-gray-200">
+                        {{#each bookings}}
+                            <div class="p-6 hover:bg-gray-50 transition-colors duration-200">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-4 space-x-reverse">
+                                        <img src="{{#if this.photo_profile}}data:image/jpeg;base64,{{this.photo_profile}}{{else}}/img/default-avatar.png{{/if}}"
+                                             class="w-16 h-16 rounded-full object-cover">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-gray-900">{{this.artisan_name}}</h3>
+                                            <p class="text-gray-600">{{this.spécialité}}</p>
+                                            <div class="flex items-center mt-1 text-sm text-gray-500">
+                                                <i class="fas fa-calendar-alt ml-2"></i>
+                                                <span>{{this.booking_date}}</span>
+                                                <span class="mx-2">-</span>
+                                                <i class="fas fa-clock ml-2"></i>
+                                                <span>{{this.booking_time}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-4 space-x-reverse">
+                                        <span class="px-3 py-1 rounded-full text-sm {{this.status_class}}">
+                                            {{#if (eq this.status "pending")}}
+                                                في الانتظار
+                                            {{else if (eq this.status "confirmed")}}
+                                                مؤكد
+                                            {{else}}
+                                                ملغى
+                                            {{/if}}
+                                        </span>
+                                        {{#if (eq this.status "pending")}}
+                                            <button @click="cancelBooking({{this.id}})"
+                                                    class="text-red-600 hover:text-red-800">
+                                                <i class="fas fa-times-circle text-xl"></i>
+                                            </button>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                                {{#if this.notes}}
+                                    <div class="mt-4 text-gray-600 text-sm">
+                                        <strong>ملاحظات:</strong> {{this.notes}}
+                                    </div>
+                                {{/if}}
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+            {{else}}
+                <div class="bg-white rounded-lg shadow p-6 text-center">
+                    <i class="fas fa-calendar-times text-4xl text-gray-400 mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-900">لا توجد حجوزات</h3>
+                    <p class="text-gray-600 mt-2">لم تقم بأي حجز مع الحرفيين بعد</p>
+                    <a href="/artisans" class="mt-4 inline-block bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">
+                        تصفح الحرفيين
+                    </a>
+                </div>
+            {{/if}}
+        </div>
+    </div>
+
+    <script>
+        function bookingsApp() {
+            return {
+                message: null,
+
+                async cancelBooking(bookingId) {
+                    if (!confirm('هل أنت متأكد من إلغاء هذا الحجز؟')) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/user-dashboard/cancel-booking/${bookingId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        const result = await response.json();
+                        
+                        if (response.ok) {
+                            this.message = {
+                                type: 'success',
+                                text: 'تم إلغاء الحجز بنجاح'
+                            };
+                            setTimeout(() => window.location.reload(), 1500);
+                        } else {
+                            this.message = {
+                                type: 'error',
+                                text: result.error || 'حدث خطأ في إلغاء الحجز'
+                            };
+                        }
+                    } catch (error) {
+                        this.message = {
+                            type: 'error',
+                            text: 'حدث خطأ في الاتصال بالخادم'
+                        };
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

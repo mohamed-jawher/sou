@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة الحرفيين - TN M3allem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.2/dist/alpine.min.js" defer></script>
+</head>
+<body class="bg-gray-50">
+    {{> header }}
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">قائمة الحرفيين</h1>
+
+        {{#if error}}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+            <span class="block sm:inline">{{error}}</span>
+        </div>
+        {{/if}}
+
+        <!-- Search and Filter Section -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8" x-data="{ speciality: '', location: '' }">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">التخصص</label>
+                    <select x-model="speciality" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">الكل</option>
+                        <option value="كهربائي">كهربائي</option>
+                        <option value="سباك">سباك</option>
+                        <option value="نجار">نجار</option>
+                        <option value="دهان">دهان</option>
+                        <option value="بناء">بناء</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">المنطقة</label>
+                    <select x-model="location" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">الكل</option>
+                        <option value="تونس">تونس</option>
+                        <option value="أريانة">أريانة</option>
+                        <option value="بن عروس">بن عروس</option>
+                        <option value="منوبة">منوبة</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Artisans Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {{#each artisans}}
+            <div class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition duration-300"
+                 x-show="(!$data.speciality || '{{this.spécialité}}'.includes($data.speciality)) && 
+                        (!$data.location || '{{this.gouvernorat}}'.includes($data.location))">
+                <div class="relative h-48">
+                    <img src="{{#if this.photo_profile}}/{{this.photo_profile}}{{else}}/img/default-avatar.png{{/if}}"
+                         alt="{{this.nom}}"
+                         class="absolute h-full w-full object-cover">
+                </div>
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-2">{{this.nom}}</h2>
+                    <p class="text-gray-600 mb-4">{{this.spécialité}}</p>
+                    <div class="flex items-center mb-4">
+                        <div class="flex items-center">
+                            <span class="text-yellow-400 mr-1">
+                                <i class="fas fa-star"></i>
+                            </span>
+                            <span class="text-gray-600">{{this.rating}}</span>
+                        </div>
+                        <span class="mx-2 text-gray-300">|</span>
+                        <span class="text-gray-600">{{this.review_count}} تقييم</span>
+                    </div>
+                    <div class="flex items-center text-gray-600 mb-4">
+                        <i class="fas fa-map-marker-alt ml-2"></i>
+                        <span>{{this.gouvernorat}}, {{this.ville}}</span>
+                    </div>
+                    <a href="/artisan/{{this.id}}" 
+                       class="block w-full text-center bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200">
+                        عرض التفاصيل
+                    </a>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</body>
+</html>

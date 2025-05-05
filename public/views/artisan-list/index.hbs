@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة الحرفيين - TN M3allim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .dataTables_wrapper .dataTables_filter { float: left; }
+        .dataTables_wrapper .dataTables_length { float: right; }
+        .dataTables_wrapper .dataTables_info { float: right; }
+        .dataTables_wrapper .dataTables_paginate { float: left; }
+    </style>
+</head>
+
+<body class="bg-slate-100 font-sans flex h-screen flex-col md:flex-row">
+    {{> adminSidebar}}
+
+    <main class="flex-1 p-4 md:p-8 mt-16 md:mt-0 overflow-auto">
+        <!-- Header Section -->
+        <div class="mb-6">
+            <h2 class="text-3xl font-bold text-slate-800">قائمة الحرفيين</h2>
+            <p class="text-slate-500 mt-2">إدارة وعرض جميع الحرفيين في النظام</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center">
+                    <div class="p-3 bg-yellow-50 rounded-full">
+                        <i class="fas fa-tools text-yellow-500 text-xl"></i>
+                    </div>
+                    <div class="mr-4">
+                        <h3 class="text-slate-500 text-sm">إجمالي الحرفيين</h3>
+                        <p class="text-2xl font-bold text-slate-800">{{totalArtisans}}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-50 rounded-full">
+                        <i class="fas fa-user-plus text-green-500 text-xl"></i>
+                    </div>
+                    <div class="mr-4">
+                        <h3 class="text-slate-500 text-sm">الحرفيين جدد</h3>
+                        <p class="text-2xl font-bold text-slate-800">{{activeArtisans}}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-50 rounded-full">
+                        <i class="fas fa-star text-blue-500 text-xl"></i>
+                    </div>
+                    <div class="mr-4">
+                        <h3 class="text-slate-500 text-sm">متوسط التقييم</h3>
+                        <p class="text-2xl font-bold text-slate-800">{{avgRating}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="bg-white rounded-lg shadow-sm">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-tools text-slate-400"></i>
+                        <h3 class="text-lg font-semibold text-slate-800">جميع الحرفيين</h3>
+                    </div>
+                    <button onclick="openAddArtisanModal()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200">
+                        <i class="fas fa-plus"></i>
+                        <span>إضافة حرفي جديد</span>
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto bg-white rounded-lg">
+                    <table id="artisanTable" class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-6 py-4 text-right text-sm font-semibold text-slate-600">الرقم</th>
+                                <th class="px-6 py-4 text-right text-sm font-semibold text-slate-600">الاسم</th>
+                                <th class="px-6 py-4 text-right text-sm font-semibold text-slate-600">البريد الإلكتروني</th>
+                                <th class="px-6 py-4 text-right text-sm font-semibold text-slate-600">رقم الهاتف</th>
+                                <th class="px-6 py-4 text-right text-sm font-semibold text-slate-600">المحافظة</th>
+                                <th class="px-6 py-4 text-right text-sm font-semibold text-slate-600">الإجراءات</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Artisan Modal -->
+    <div id="addArtisanModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-slate-800">إضافة حرفي جديد</h3>
+                <button onclick="closeAddArtisanModal()" class="text-slate-500 hover:text-slate-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="addArtisanForm" class="space-y-6">
+                <!-- Basic Information -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">الاسم</label>
+                        <input type="text" name="nom" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">البريد الإلكتروني</label>
+                        <input type="email" name="email" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">رقم الهاتف</label>
+                        <input type="tel" name="telephone" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">المحافظة</label>
+                        <input type="text" name="gouvernorat" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                </div>
+
+                <!-- Artisan Specific Information -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">التخصص</label>
+                        <input type="text" name="spécialité" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">الموقع</label>
+                        <input type="text" name="localisation" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">سنوات الخبرة</label>
+                        <input type="number" name="expérience" required min="0" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">التعريفة بالساعة (د.ت)</label>
+                        <input type="number" name="tarif_horaire" required min="0" step="0.001" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                </div>
+
+                <!-- Social Media Links -->
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">فيسبوك (اختياري)</label>
+                        <input type="url" name="facebook" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">انستغرام (اختياري)</label>
+                        <input type="url" name="instagram" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">لينكد إن (اختياري)</label>
+                        <input type="url" name="linkedin" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">وصف (اختياري)</label>
+                    <textarea name="description" rows="4" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-yellow-500"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-4">
+                    <button type="button" onclick="closeAddArtisanModal()" class="px-6 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">
+                        إلغاء
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">
+                        إضافة الحرفي
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        // Global functions
+        window.deleteUser = function(userId, userName) {
+            if (confirm(`هل أنت متأكد من حذف ${userName}؟`)) {
+                fetch(`/admin/artisan/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => Promise.reject(err));
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        $('#artisanTable').DataTable().ajax.reload();
+                        showNotification('تم حذف الحرفي بنجاح');
+                    } else {
+                        showNotification(data.error || 'حدث خطأ أثناء حذف الحرفي', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification(error.error || 'حدث خطأ أثناء حذف الحرفي', 'error');
+                });
+            }
+        };
+
+        function showNotification(message, type = 'success') {
+            const notif = $('<div></div>')
+                .addClass(`fixed bottom-4 right-4 p-4 rounded-lg text-white ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} shadow-lg`)
+                .text(message);
+            
+            $('body').append(notif);
+            
+            setTimeout(() => {
+                notif.fadeOut(300, function() {
+                    $(this).remove();
+                });
+            }, 3000);
+        }
+
+        $(document).ready(function() {
+            // Initialize DataTable
+            var table = $('#artisanTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '/admin/artisans/data',
+                    dataSrc: 'data'
+                },
+                columns: [
+                    { 
+                        data: 'id',
+                        render: function(data, type, row) {
+                            return `<span class="font-medium">${data}</span>`;
+                        }
+                    },
+                    { 
+                        data: 'nom',
+                        render: function(data) {
+                            return `<span class="font-medium text-slate-900">${data || ''}</span>`;
+                        }
+                    },
+                    { data: 'email' },
+                    { 
+                        data: 'telephone',
+                        render: function(data) {
+                            return data || 'غير متوفر';
+                        }
+                    },
+                    { data: 'gouvernorat' },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            return `
+                                <div class="flex justify-end gap-3">
+                                    <button onclick="deleteUser(${row.id}, '${row.nom.replace(/'/g, "\\'")}')" 
+                                        class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1 rounded-md transition-colors duration-200">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    }
+                ],
+                order: [[0, 'desc']],
+                language: {
+                    "sProcessing": "جارٍ التحميل...",
+                    "sLengthMenu": "أظهر _MENU_ مدخلات",
+                    "sZeroRecords": "لم يعثر على أية سجلات",
+                    "sInfo": "إظهار _START_ إلى _END_ من أصل _TOTAL_ مدخل",
+                    "sInfoEmpty": "يعرض 0 إلى 0 من أصل 0 سجل",
+                    "sInfoFiltered": "(منتقاة من مجموع _MAX_ مُدخل)",
+                    "sInfoPostFix": "",
+                    "sSearch": "ابحث:",
+                    "sUrl": "",
+                    "oPaginate": {
+                        "sFirst": "الأول",
+                        "sPrevious": "السابق",
+                        "sNext": "التالي",
+                        "sLast": "الأخير"
+                    }
+                }
+            });
+            
+            // Handle form submission
+            $('#addArtisanForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = {};
+                $(this).serializeArray().forEach(item => {
+                    formData[item.name] = item.value;
+                });
+
+                fetch('/admin/artisans', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        closeAddArtisanModal();
+                        $('#artisanTable').DataTable().ajax.reload();
+                        showNotification('تم إضافة الحرفي بنجاح');
+                        $('#addArtisanForm')[0].reset();
+                    } else {
+                        showNotification(data.error || 'حدث خطأ أثناء إضافة الحرفي', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('حدث خطأ أثناء إضافة الحرفي', 'error');
+                });
+            });
+        });
+
+        // Modal functions
+        function openAddArtisanModal() {
+            document.getElementById('addArtisanModal').classList.remove('hidden');
+            document.getElementById('addArtisanModal').classList.add('flex');
+        }
+
+        function closeAddArtisanModal() {
+            document.getElementById('addArtisanModal').classList.remove('flex');
+            document.getElementById('addArtisanModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

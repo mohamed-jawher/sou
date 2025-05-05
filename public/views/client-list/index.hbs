@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة المستخدمين - TN M3allim</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .dataTables_wrapper .dataTables_filter { float: left; }
+        .dataTables_wrapper .dataTables_length { float: right; }
+        .dataTables_wrapper .dataTables_info { float: right; }
+        .dataTables_wrapper .dataTables_paginate { float: left; }
+    </style>
+</head>
+
+<body class="bg-slate-100 font-sans flex h-screen flex-col md:flex-row">
+    {{> adminSidebar}}
+
+    <main class="flex-1 p-4 md:p-8 mt-16 md:mt-0 overflow-auto">
+        <!-- Header Section -->
+        <div class="mb-6">
+            <h2 class="text-3xl font-bold text-slate-800">قائمة المستخدمين</h2>
+            <p class="text-slate-500 mt-2">إدارة وعرض جميع المستخدمين في النظام</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-50 rounded-full">
+                        <i class="fas fa-users text-blue-500 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-3xl font-extrabold text-slate-800" id="totalUsersNumber">
+                            {{#if totalUsers}}
+                                {{totalUsers}}
+                            {{else}}
+                                0
+                            {{/if}}
+                        </div>
+                        <div class="text-slate-500 text-sm mt-1">إجمالي جميع المستخدمين</div>
+                    </div>
+                </div> 
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-50 rounded-full">
+                        <i class="fas fa-user-check text-green-500 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-2xl font-bold text-slate-800" id="activeUsersNumber">
+                            {{#if activeUsers}}
+                                {{activeUsers}}
+                            {{else}}
+                                0
+                            {{/if}}
+                        </div>
+                        <div class="text-slate-500">المستخدمين النشطين</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center">
+                    <div class="p-3 bg-yellow-50 rounded-full">
+                        <i class="fas fa-user-plus text-yellow-500 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-2xl font-bold text-slate-800" id="totalUsersInTable">
+                            <span id="dynamicTotalUsers">{{totalUsers}}</span>
+                        </div>
+                        <div class="text-slate-500">مستخدمين جدد</div>
+                    </div>
+                </div> 
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="bg-white rounded-lg shadow-sm">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-list text-slate-400"></i>
+                        <h3 class="text-lg font-semibold text-slate-800">جميع المستخدمين</h3>
+                    </div>
+                    <button id="openAddUserModal" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200">
+                        <i class="fas fa-plus"></i>
+                        إضافة مستخدم جديد
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table id="clientTable" class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-6 py-4 text-right text-sm font-semibold text-slate-600">الرقم</th>
+                                <th class="px-6 py-4 text-right text-sm font-semibold text-slate-600">الاسم</th>
+                                <th class="px-6 py-4 text-right text-sm font-semibold text-slate-600">البريد الإلكتروني</th>
+                                <th class="px-6 py-4 text-right text-sm font-semibold text-slate-600">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add New User Modal -->
+    <div id="addUserModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+        <h3 class="text-xl font-semibold mb-4">إضافة مستخدم جديد</h3>
+        <form id="addUserForm" class="space-y-4">
+          <div>
+            <label class="block mb-1">الاسم</label>
+            <input type="text" name="nom" required class="w-full border rounded px-3 py-2">
+          </div>
+          <div>
+            <label class="block mb-1">البريد الإلكتروني</label>
+            <input type="email" name="email" required class="w-full border rounded px-3 py-2">
+          </div>
+          <div>
+            <label class="block mb-1">كلمة المرور</label>
+            <input type="password" name="mot_de_passe" required class="w-full border rounded px-3 py-2">
+          </div>
+          <div>
+            <label class="block mb-1">الدور</label>
+            <select name="rôle" required class="w-full border rounded px-3 py-2">
+              <option value="client">عميل</option>
+              <option value="artisan">حرفي</option>
+              <option value="admin">مدير</option>
+            </select>
+          </div>
+          <div class="flex justify-end gap-2">
+            <button type="button" id="closeAddUserModal" class="px-4 py-2 rounded bg-gray-300">إلغاء</button>
+            <button type="submit" class="px-4 py-2 rounded bg-yellow-500 text-white">إضافة</button>
+          </div>
+        </form>
+        <div id="addUserError" class="text-red-600 mt-2 hidden"></div>
+      </div>
+    </div>
+
+    <!-- All Users Modal -->
+    <div id="allUsersModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl max-h-[80vh] overflow-auto">
+            <h3 class="text-xl font-semibold mb-4">جميع المستخدمين</h3>
+            <table class="min-w-full border text-sm">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="py-2 px-3 border">الاسم</th>
+                        <th class="py-2 px-3 border">البريد الإلكتروني</th>
+                        <th class="py-2 px-3 border">الدور</th>
+                        <th class="py-2 px-3 border">الحالة</th>
+                        <th class="py-2 px-3 border">تاريخ الإنشاء</th>
+                    </tr>
+                </thead>
+                <tbody id="allUsersTableBody">
+                    <tr><td colspan="5" class="text-center py-4">جاري التحميل...</td></tr>
+                </tbody>
+            </table>
+            <div class="flex justify-end mt-4">
+                <button id="closeAllUsersModal" class="px-4 py-2 rounded bg-gray-300">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Function to dynamically update the total users number
+            function updateTotalUsersNumber() {
+                $.ajax({
+                  url: '/admin/users-count',
+                  method: 'GET',
+                  success: function(data) {
+                    if (data && typeof data.total === 'number') {
+                      $('#totalUsersNumber').text(data.total);
+                    }
+                  }
+                });
+            }
+            updateTotalUsersNumber(); // Initial call
+            setInterval(updateTotalUsersNumber, 30000); // Update every 30 seconds
+
+            var table = $('#clientTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/ar.json'
+                },
+                ajax: {
+                    url: "/admin/users-data",
+                    data: function(d) {
+                        d.role = 'client';
+                    }
+                },
+                columns: [
+                    { 
+                        data: null,
+                        render: function(data, type, row, meta) {
+                            return meta.row + 1;
+                        }
+                    },
+                    { 
+                        data: "nom",
+                        render: function(data, type, row) {
+                            return `<div class="text-slate-700 font-medium">${data}</div>`;
+                        }
+                    },
+                    { 
+                        data: "email",
+                        render: function(data, type, row) {
+                            return `<div class="text-slate-600">${data}</div>`;
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            return `
+                                <div class="flex justify-end gap-3">
+                                    <button onclick="viewClient('${row.id}')" 
+                                        class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1 rounded-md transition-colors duration-200">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button onclick="deleteUser('${row.id}', '${row.nom}')" 
+                                        class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1 rounded-md transition-colors duration-200">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    }
+                ],
+                order: [[0, 'asc']],
+                pageLength: 10,
+                responsive: true
+            });
+
+            function updateTotalUsersFromTable() {
+                // Get total records shown in the table (after filtering/searching)
+                var info = table.page.info();
+                var total = info.recordsDisplay;
+                $('#dynamicTotalUsers').text(total);
+            }
+
+            // Update on table draw (pagination, search, etc)
+            table.on('draw', updateTotalUsersFromTable);
+            // Initial update
+            updateTotalUsersFromTable();
+
+            // Show modal
+            $('#openAddUserModal').click(function() {
+                $('#addUserModal').removeClass('hidden');
+            });
+            // Hide modal
+            $('#closeAddUserModal').click(function() {
+                $('#addUserModal').addClass('hidden');
+                $('#addUserError').addClass('hidden').text('');
+                $('#addUserForm')[0].reset();
+            });
+            // Submit form
+            $('#addUserForm').submit(function(e) {
+                e.preventDefault();
+                const formData = $(this).serializeArray();
+                // Map form fields to match /signup route
+                const data = {
+                  name: formData.find(f => f.name === 'nom').value,
+                  email: formData.find(f => f.name === 'email').value,
+                  password: formData.find(f => f.name === 'mot_de_passe').value,
+                  role: formData.find(f => f.name === 'rôle').value
+                };
+                $.ajax({
+                  url: '/signup',
+                  method: 'POST',
+                  data: data,
+                  success: function(res) {
+                    if(res.success) {
+                      $('#addUserModal').addClass('hidden');
+                      $('#addUserForm')[0].reset();
+                      $('#clientTable').DataTable().ajax.reload();
+                      showNotification('تمت إضافة المستخدم بنجاح!');
+                    } else {
+                      $('#addUserError').removeClass('hidden').text(res.message || 'حدث خطأ');
+                    }
+                  },
+                  error: function(xhr) {
+                    $('#addUserError').removeClass('hidden').text('حدث خطأ أثناء الإضافة');
+                  }
+                });
+            });
+
+            // Show all users modal
+            $('#showAllUsersBtn').click(function() {
+                $('#allUsersModal').removeClass('hidden');
+                $('#allUsersTableBody').html('<tr><td colspan="5" class="text-center py-4">جاري التحميل...</td></tr>');
+                $.ajax({
+                  url: '/admin/users-data',
+                  method: 'GET',
+                  success: function(data) {
+                    if (Array.isArray(data)) {
+                      // Update badge number
+                      $('#allUsersCountBadge').text(data.length);
+                    }
+                    if (Array.isArray(data) && data.length > 0) {
+                      let rows = data.map(function(user) {
+                        return `<tr>
+                          <td class="border px-2 py-1">${user.nom || ''}</td>
+                          <td class="border px-2 py-1">${user.email || ''}</td>
+                          <td class="border px-2 py-1">${user.rôle || ''}</td>
+                          <td class="border px-2 py-1">${user.actif === 1 ? 'نشط' : 'غير نشط'}</td>
+                          <td class="border px-2 py-1">${user.created_at ? user.created_at.split('T')[0] : ''}</td>
+                        </tr>`;
+                      }).join('');
+                      $('#allUsersTableBody').html(rows);
+                    } else {
+                      $('#allUsersTableBody').html('<tr><td colspan="5" class="text-center py-4">لا يوجد مستخدمون</td></tr>');
+                    }
+                  },
+                  error: function() {
+                    $('#allUsersTableBody').html('<tr><td colspan="5" class="text-center py-4 text-red-600">حدث خطأ أثناء جلب المستخدمين</td></tr>');
+                  }
+                });
+            });
+            $('#closeAllUsersModal').click(function() {
+                $('#allUsersModal').addClass('hidden');
+            });
+
+            // Make deleteUser globally available
+            window.deleteUser = function(userId, userName) {
+                if (confirm(`هل أنت متأكد من حذف ${userName}؟`)) {
+                    fetch(`/admin/client/${userId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => Promise.reject(err));
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            $('#clientTable').DataTable().ajax.reload();
+                            showNotification('تم حذف العميل بنجاح');
+                        } else {
+                            showNotification(data.error || 'حدث خطأ أثناء حذف العميل', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification(error.error || 'حدث خطأ أثناء حذف العميل', 'error');
+                    });
+                }
+            };
+
+            // View client details
+            function viewClient(clientId) {
+                window.location.href = `/admin/client/${clientId}`;
+            }
+
+            // Delete client
+            function deleteClient(clientId) {
+                if (confirm('هل أنت متأكد من حذف هذا العميل؟')) {
+                    fetch(`/admin/client/${clientId}`, {
+                        method: 'DELETE',
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Refresh the DataTable
+                            $('#clientTable').DataTable().ajax.reload();
+                            // Show success message
+                            alert('تم حذف العميل بنجاح');
+                        } else {
+                            alert(data.error || 'حدث خطأ أثناء حذف العميل');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('حدث خطأ أثناء حذف العميل');
+                    });
+                }
+            }
+
+            // Add client
+            function addClient() {
+                // Get form data
+                const formData = {
+                    nom: $('#nom').val(),
+                    email: $('#email').val(),
+                    telephone: $('#telephone').val(),
+                    adresse: $('#adresse').val(),
+                    gouvernorat: $('#gouvernorat').val(),
+                    sexe: $('#sexe').val(),
+                    date_naissance: $('#date_naissance').val(),
+                    password: $('#password').val()
+                };
+
+                // Send POST request
+                fetch('/admin/client', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close modal
+                        $('#addClientModal').modal('hide');
+                        // Refresh table
+                        $('#clientTable').DataTable().ajax.reload();
+                        // Show success message
+                        alert('تم إضافة العميل بنجاح');
+                        // Reset form
+                        $('#addClientForm')[0].reset();
+                    } else {
+                        alert(data.error || 'حدث خطأ أثناء إضافة العميل');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء إضافة العميل');
+                });
+            }
+
+            // Notification function
+            function showNotification(message, type = 'success') {
+                let notif = $('<div></div>')
+                  .addClass('fixed top-5 right-5 bg-' + (type === 'success' ? 'green' : 'red') + '-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-bounce')
+                  .text(message)
+                  .hide();
+                $('body').append(notif);
+                notif.fadeIn(400);
+                setTimeout(function() {
+                  notif.fadeOut(400, function() { $(this).remove(); });
+                }, 2500);
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              document.querySelectorAll('.delete-user-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                  if (confirm('هل أنت متأكد أنك تريد حذف هذا المستخدم؟')) {
+                    const userId = this.getAttribute('data-user-id');
+                    fetch(`/admin/client/${userId}/delete`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                      if (data.success) {
+                        this.closest('tr').remove();
+                      } else {
+                        alert('حدث خطأ أثناء الحذف');
+                      }
+                    });
+                  }
+                });
+              });
+            });
+        });
+    </script>
+</body>
+</html>

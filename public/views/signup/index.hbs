@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب جديد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Ajouter la police Poppins depuis Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Appliquer la police Poppins à tout le document */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-image: url('https://images.pexels.com/photos/33266/work-chinese-industrial-professional.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+        }
+
+        /* Effet de flou sur l'arrière-plan */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: inherit;
+            background-size: cover;
+            background-position: center;
+            filter: blur(10px);
+            /* Appliquer un flou */
+            z-index: -1;
+        }
+
+        /* Conteneur pour les particules */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Style des particules */
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 5s infinite ease-in-out;
+        }
+
+        /* Animation des particules */
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0) scale(0.5);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: translateY(-20vh) translateX(20vw) scale(1);
+                opacity: 0.4;
+            }
+
+            100% {
+                transform: translateY(0) translateX(0) scale(0.5);
+                opacity: 0.8;
+            }
+        }
+
+        /* Effet de flou et ombre pour le conteneur du formulaire */
+        .form-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Style pour l'image de l'artisan */
+        .artisan-image {
+            background-image: url('https://images.pexels.com/photos/3825527/pexels-photo-3825527.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-size: cover;
+            background-position: center;
+            border-radius: 12px;
+            height: 200px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Effet de survol pour les boutons */
+        .hover-effect {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Animation pour les champs de formulaire */
+        .input-field {
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+        }
+
+        /* Ajustements de typographie */
+        h2 {
+            font-weight: 600;
+            /* Poppins Semi-Bold */
+        }
+
+        p,
+        label,
+        input,
+        select,
+        button {
+            font-weight: 400;
+            /* Poppins Regular */
+        }
+
+        button {
+            font-weight: 500;
+            /* Poppins Medium */
+        }
+        select option {
+            background: rgba(15, 23, 42, 0.9);
+            color: white;
+        }
+    </style>
+</head>
+
+<body class="flex justify-center items-center h-screen p-4">
+    <!-- Conteneur des particules -->
+    <div class="particles">
+        <!-- Génération de particules -->
+        <div class="particle" style="top: 10%; left: 20%; width: 10px; height: 10px; animation-delay: 0s;"></div>
+        <div class="particle" style="top: 30%; left: 50%; width: 8px; height: 8px; animation-delay: 2s;"></div>
+        <div class="particle" style="top: 50%; left: 70%; width: 12px; height: 12px; animation-delay: 4s;"></div>
+        <div class="particle" style="top: 70%; left: 10%; width: 9px; height: 9px; animation-delay: 1s;"></div>
+        <div class="particle" style="top: 90%; left: 40%; width: 7px; height: 7px; animation-delay: 3s;"></div>
+    </div>
+
+    <!-- Conteneur du formulaire -->
+    <div class="form-container p-8 rounded-xl max-w-md w-full">
+        <h2 class="text-3xl font-extrabold text-center text-white">إنشاء حساب جديد</h2>
+        <p class="text-white/80 text-center mt-2">قم بإنشاء حساب جديد للبدء</p>
+
+        <form id="signupForm" class="mt-6 space-y-4">
+            <div>
+                <label class="block text-white/80 font-medium mb-1">الاسم الكامل</label>
+                <input type="text" name="nom"
+                    class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
+                    placeholder="أدخل اسمك الكامل"
+                    required>
+            </div>
+
+            <div>
+                <label class="block text-white/80 font-medium mb-1">البريد الإلكتروني</label>
+                <input type="email" name="email"
+                    class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
+                    placeholder="example@domain.com"
+                    required>
+                <p class="text-yellow-300 text-sm mt-1 hidden" id="emailError">يجب أن يحتوي البريد الإلكتروني على @</p>
+            </div>
+
+            <div>
+                <label class="block text-white/80 font-medium mb-1">رقم الهاتف</label>
+                <input type="tel" name="telephone" pattern="[0-9]{8}"
+                    class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
+                    placeholder="مثال: 12345678" required>
+                <p class="text-yellow-300 text-sm mt-1 hidden" id="phoneError">يجب أن يتكون رقم الهاتف من 8 أرقام</p>
+            </div>
+
+            <div>
+                <label class="block text-white/80 font-medium mb-1">العنوان</label>
+                <input type="text" name="adresse"
+                    class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
+                    placeholder="أدخل عنوانك"
+                    required>
+            </div>
+
+            <div>
+                <label class="block text-white/80 font-medium mb-1">الولاية</label>
+                <select name="gouvernorat"
+                    class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
+                    required>
+                    <option value="">اختر الولاية</option>
+                    <option value="tunis">تونس</option>
+                    <option value="ariana">أريانة</option>
+                    <option value="ben_arous">بن عروس</option>
+                    <option value="manouba">منوبة</option>
+                    <option value="nabeul">نابل</option>
+                    <option value="zaghouan">زغوان</option>
+                    <option value="bizerte">بنزرت</option>
+                    <option value="beja">باجة</option>
+                    <option value="jendouba">جندوبة</option>
+                    <option value="kef">الكاف</option>
+                    <option value="siliana">سليانة</option>
+                    <option value="sousse">سوسة</option>
+                    <option value="monastir">المنستير</option>
+                    <option value="mahdia">المهدية</option>
+                    <option value="sfax">صفاقس</option>
+                    <option value="kairouan">القيروان</option>
+                    <option value="kasserine">القصرين</option>
+                    <option value="sidi_bouzid">سيدي بوزيد</option>
+                    <option value="gabes">قابس</option>
+                    <option value="medenine">مدنين</option>
+                    <option value="tataouine">تطاوين</option>
+                    <option value="gafsa">قفصة</option>
+                    <option value="tozeur">توزر</option>
+                    <option value="kebili">قبلي</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-white/80 font-medium mb-1">كلمة المرور</label>
+                <input type="password" name="mot_de_passe"
+                    class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
+                    placeholder="********"
+                    required>
+                <p class="text-yellow-300 text-sm mt-1 hidden" id="passwordError">يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل</p>
+            </div>
+
+            <div>
+                <label class="block text-white/80 font-medium mb-1">نوع الحساب</label>
+                <select name="rôle"
+                    class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
+                    required>
+                    <option value="">اختر نوع الحساب</option>
+                    <option value="client">عميل</option>
+                    <option value="artisan">حرفي</option>
+                </select>
+            </div>
+
+            <div class="mt-8">
+                <button type="submit"
+                    class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors hover-effect">
+                    إنشاء حساب
+                </button>
+            </div>
+
+            <p class="text-white/80 text-center mt-4">
+                لديك حساب بالفعل؟
+                <a href="/login" class="text-blue-400 hover:text-blue-300">تسجيل الدخول</a>
+            </p>
+        </form>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('signupForm');
+                if (!form) return;
+
+                form.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+
+                    const formData = new FormData(this);
+                    const data = Object.fromEntries(formData.entries());
+
+                    // Validate email
+                    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                    const emailError = document.getElementById('emailError');
+                    if (!emailRegex.test(data.email)) {
+                        emailError?.classList.remove('hidden');
+                        return;
+                    } else {
+                        emailError?.classList.add('hidden');
+                    }
+
+                    // Validate password
+                    const passwordError = document.getElementById('passwordError');
+                    if (data.mot_de_passe.length < 8) {
+                        passwordError?.classList.remove('hidden');
+                        return;
+                    } else {
+                        passwordError?.classList.add('hidden');
+                    }
+
+                    // Validate phone number
+                    const phoneError = document.getElementById('phoneError');
+                    if (data.telephone.length !== 8 || !/^\d+$/.test(data.telephone)) {
+                        phoneError?.classList.remove('hidden');
+                        return;
+                    } else {
+                        phoneError?.classList.add('hidden');
+                    }
+
+                    try {
+                        const response = await fetch('/signup', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'تم إنشاء الحساب بنجاح',
+                                text: 'جاري التوجيه...',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.href = '/login';
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'خطأ',
+                                text: result.message
+                            });
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطأ في الاتصال',
+                            text: 'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.'
+                        });
+                    }
+                });
+
+                // Add input event listeners for real-time validation
+                const emailInput = document.querySelector('input[name="email"]');
+                const passwordInput = document.querySelector('input[name="mot_de_passe"]');
+                const phoneInput = document.querySelector('input[name="telephone"]');
+
+                if (emailInput) {
+                    emailInput.addEventListener('input', function() {
+                        const emailError = document.getElementById('emailError');
+                        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                        if (!emailRegex.test(this.value)) {
+                            emailError?.classList.remove('hidden');
+                        } else {
+                            emailError?.classList.add('hidden');
+                        }
+                    });
+                }
+
+                if (passwordInput) {
+                    passwordInput.addEventListener('input', function() {
+                        const passwordError = document.getElementById('passwordError');
+                        if (this.value.length < 8) {
+                            passwordError?.classList.remove('hidden');
+                        } else {
+                            passwordError?.classList.add('hidden');
+                        }
+                    });
+                }
+
+                if (phoneInput) {
+                    phoneInput.addEventListener('input', function() {
+                        const phoneError = document.getElementById('phoneError');
+                        if (this.value.length !== 8 || !/^\d+$/.test(this.value)) {
+                            phoneError?.classList.remove('hidden');
+                        } else {
+                            phoneError?.classList.add('hidden');
+                        }
+                    });
+                }
+            });
+        </script>
+    </div>
+
+</body>
+
+</html>
