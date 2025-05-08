@@ -86,6 +86,16 @@ router.get('/logout', (req, res) => {
 // Client list page
 router.get('/client-list', checkAdminAuth, async (req, res) => {
     try {
+        // Get total clients count
+        const [clientStats] = await db.promise().query(`
+            SELECT 
+                COUNT(*) as totalClients,
+                SUM(CASE WHEN active = TRUE THEN 1 ELSE 0 END) as activeClients
+            FROM utilisateurs 
+            WHERE rôle = 'client'
+        `);
+
+        // Get client list
         const query = `
             SELECT 
                 u.id, 
@@ -99,36 +109,23 @@ router.get('/client-list', checkAdminAuth, async (req, res) => {
             ORDER BY u.id DESC
         `;
 
-        db.query(query, (err, clients) => {
-            if (err) {
-                console.error('Error fetching clients:', err);
-                return res.render('client-list/index', {
-                    title: 'قائمة المستخدمين',
-                    error: 'حدث خطأ في جلب بيانات المستخدمين',
-                    user: {
-                        id: req.session.userId,
-                        role: req.session.userRole,
-                        name: req.session.userName
-                    }
-                });
-            }
+        const [clients] = await db.promise().query(query);
 
-            res.render('client-list/index', {
-                title: 'قائمة المستخدمين',
-                clients: clients,
-                totalClients: clients.length,
-                activeClients: clients.filter(c => c.active).length,
-                user: {
-                    id: req.session.userId,
-                    role: req.session.userRole,
-                    name: req.session.userName
-                }
-            });
+        res.render('client-list/index', {
+            title: 'قائمة الحرفاء',
+            clients,
+            totalClients: clientStats[0].totalClients,
+            activeClients: clientStats[0].activeClients,
+            user: {
+                id: req.session.userId,
+                role: req.session.userRole,
+                name: req.session.userName
+            }
         });
     } catch (error) {
         console.error('Error:', error);
         res.render('client-list/index', {
-            title: 'قائمة المستخدمين',
+            title: 'قائمة الحرفاء',
             error: 'حدث خطأ في النظام',
             user: {
                 id: req.session.userId,
@@ -427,7 +424,7 @@ router.get('/dashboard-data', checkAdminAuth, (req, res) => {
     // Get statistics
     const statsQuery = `
         SELECT 
-            (SELECT COUNT(*) FROM utilisateurs) as totalUsers,
+            (SELECT COUNT(*) FROM utilisateurs WHERE rôle IN ('client', 'artisan')) as totalUsers,
             (SELECT COUNT(*) FROM utilisateurs WHERE rôle = 'client') as clients,
             (SELECT COUNT(*) FROM utilisateurs WHERE rôle = 'artisan') as artisans,
             (SELECT COUNT(*) FROM reports) as messages
@@ -529,7 +526,7 @@ router.get('/users-data', checkAdminAuth, async (req, res) => {
     } catch (error) {
         console.error('Error fetching users:', error);
         res.status(500).json({ 
-            error: 'حدث خطأ أثناء جلب بيانات المستخدمين',
+            error: 'حدث خطأ أثناء جلب بيانات الحرفاء',
             data: [],
             recordsTotal: 0,
             recordsFiltered: 0
@@ -753,7 +750,7 @@ router.get('/user-messages/all', checkAdminAuth, (req, res) => {
         if (err) {
             console.error('Error fetching enquete messages:', err);
             return res.render('user-messages/index', {
-                title: 'رسائل المستخدمين',
+                title: 'رسائل الحرفاء',
                 messages: [],
                 totalMessages: 0,
                 error: 'حدث خطأ أثناء جلب رسائل الاستبيان'
@@ -763,7 +760,7 @@ router.get('/user-messages/all', checkAdminAuth, (req, res) => {
             if (err2) {
                 console.error('Error fetching contact messages:', err2);
                 return res.render('user-messages/index', {
-                    title: 'رسائل المستخدمين',
+                    title: 'رسائل الحرفاء',
                     messages: enqueteResults,
                     totalMessages: enqueteResults.length,
                     error: 'حدث خطأ أثناء جلب رسائل التواصل'
@@ -772,7 +769,7 @@ router.get('/user-messages/all', checkAdminAuth, (req, res) => {
             // Merge both arrays
             const allMessages = [...enqueteResults, ...contactsResults].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             res.render('user-messages/index', {
-                title: 'رسائل المستخدمين',
+                title: 'رسائل الحرفاء',
                 messages: allMessages,
                 totalMessages: allMessages.length
             });
@@ -1301,10 +1298,10 @@ router.delete('/user/:id', checkAdminAuth, async (req, res) => {
 // Add new user
 router.post('/user', checkAdminAuth, async (req, res) => {
     try {
-        const { nom, email, telephone, gouvernorat, rôle } = req.body;
+        const { nom, email, telephone, rôle, mot_de_passe } = req.body;
 
         // Validate required fields
-        if (!nom || !email || !telephone || !gouvernorat || !rôle) {
+        if (!nom || !email || !telephone || !rôle || !mot_de_passe) {
             return res.status(400).json({
                 success: false,
                 error: 'جميع الحقول مطلوبة'
@@ -1324,43 +1321,23 @@ router.post('/user', checkAdminAuth, async (req, res) => {
             });
         }
 
-        // Generate a random password
-        const password = Math.random().toString(36).slice(-8);
-        const hashedPassword = await bcrypt.hash(password, 10);
+        // Hash the provided password
+        const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
 
-        // Start transaction
-        const connection = await db.promise().getConnection();
-        await connection.beginTransaction();
+        // Insert user with mot_de_passe
+        const query = 'INSERT INTO utilisateurs (nom, email, mot_de_passe, telephone, rôle) VALUES (?, ?, ?, ?, ?)';
+        const values = [nom, email, hashedPassword, telephone, rôle];
+        
+        console.log('Inserting user with query:', query);
+        console.log('Values:', values);
 
-        try {
-            // Insert user
-            const [result] = await connection.query(
-                'INSERT INTO utilisateurs (nom, email, password, telephone, gouvernorat, rôle) VALUES (?, ?, ?, ?, ?, ?)',
-                [nom, email, hashedPassword, telephone, gouvernorat, rôle]
-            );
+        await db.promise().query(query, values);
 
-            if (rôle === 'artisan') {
-                // Create artisan record
-                await connection.query(
-                    'INSERT INTO artisans (utilisateur_id) VALUES (?)',
-                    [result.insertId]
-                );
-            }
-
-            await connection.commit();
-
-            // Send success response with the generated password
-            res.json({
-                success: true,
-                message: 'تمت إضافة المستخدم بنجاح',
-                password: password // This will be shown to admin to share with user
-            });
-        } catch (error) {
-            await connection.rollback();
-            throw error;
-        } finally {
-            connection.release();
-        }
+        // Send success response
+        res.json({
+            success: true,
+            message: 'تمت إضافة المستخدم بنجاح'
+        });
     } catch (error) {
         console.error('Error adding user:', error);
         res.status(500).json({
@@ -1368,6 +1345,35 @@ router.post('/user', checkAdminAuth, async (req, res) => {
             error: 'حدث خطأ أثناء إضافة المستخدم'
         });
     }
+});
+
+// Route to handle user message submissions
+router.post('/user-messages', checkAdminAuth, (req, res) => {
+    const { nom, email, num_tel, message } = req.body;
+
+    // Validate required fields
+    if (!nom || !email || !num_tel || !message) {
+        return res.status(400).json({
+            success: false,
+            error: 'جميع الحقول مطلوبة'
+        });
+    }
+
+    const sql = 'INSERT INTO enquete (nom, email, num_tel, message) VALUES (?, ?, ?, ?)';
+    db.query(sql, [nom, email, num_tel, message], (err, result) => {
+        if (err) {
+            console.error('Error saving message:', err);
+            return res.status(500).json({
+                success: false,
+                error: 'حدث خطأ أثناء حفظ الرسالة'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'تم حفظ الرسالة بنجاح'
+        });
+    });
 });
 
 module.exports = router;

@@ -67,6 +67,13 @@
                                                 ملغى
                                             {{/if}}
                                         </span>
+                                        {{#if (eq this.status "confirmed")}}
+                                            <button @click="initiatePayment({{this.id}})"
+                                                    class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center">
+                                                <i class="fas fa-credit-card ml-2"></i>
+                                                دفع
+                                            </button>
+                                        {{/if}}
                                         {{#if (eq this.status "pending")}}
                                             <button @click="cancelBooking({{this.id}})"
                                                     class="text-red-600 hover:text-red-800">
@@ -101,6 +108,24 @@
         function bookingsApp() {
             return {
                 message: null,
+
+                async initiatePayment(bookingId) {
+                    // Show confirmation dialog
+                    if (!confirm('هل تريد المتابعة للدفع؟')) {
+                        return;
+                    }
+
+                    this.message = {
+                        type: 'success',
+                        text: 'جاري تحويلك إلى صفحة الدفع...'
+                    };
+
+                    // Here you can add the actual payment gateway integration
+                    // For now, we'll just show a message
+                    setTimeout(() => {
+                        alert('سيتم قريباً إضافة بوابة الدفع');
+                    }, 1500);
+                },
 
                 async cancelBooking(bookingId) {
                     if (!confirm('هل أنت متأكد من إلغاء هذا الحجز؟')) {

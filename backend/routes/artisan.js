@@ -849,4 +849,190 @@ router.get('/report', checkArtisanAuth, async (req, res) => {
     }
 });
 
+// Toggle artisan availability
+router.post('/toggle-availability', checkArtisanAuth, async (req, res) => {
+    try {
+        const { available } = req.body;
+        const userId = req.session.userId;
+
+        // First get artisan_id
+        const getArtisanQuery = `SELECT id FROM artisans WHERE utilisateur_id = ?`;
+        const [artisanResult] = await db.promise().query(getArtisanQuery, [userId]);
+        
+        if (artisanResult.length === 0) {
+            return res.status(404).json({ success: false, message: 'Artisan not found' });
+        }
+
+        // Update availability
+        const updateQuery = `UPDATE artisans SET disponibilité = ? WHERE id = ?`;
+        await db.promise().query(updateQuery, [available, artisanResult[0].id]);
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating availability:', error);
+        res.status(500).json({ success: false, message: 'Error updating availability' });
+    }
+});
+
+// Get artisan availability status
+router.get('/availability-status', checkArtisanAuth, async (req, res) => {
+    try {
+        const userId = req.session.userId;
+
+        // Get artisan availability status
+        const query = `
+            SELECT disponibilité as available 
+            FROM artisans 
+            WHERE utilisateur_id = ?
+        `;
+        const [result] = await db.promise().query(query, [userId]);
+        
+        if (result.length === 0) {
+            return res.status(404).json({ success: false, message: 'Artisan not found' });
+        }
+
+        res.json({ success: true, available: result[0].available });
+    } catch (error) {
+        console.error('Error getting availability status:', error);
+        res.status(500).json({ success: false, message: 'Error getting availability status' });
+    }
+});
+
+router.get("/artisan/messages", checkArtisanAuth, (req, res) => {
+    const userId = req.session.userId; // Utilisation de userId ici
+    console.log(userId);
+    
+    // Requête SQL pour récupérer toutes les conversations où l'utilisateur a reçu des messages
+    const getUsersQuery = `
+      SELECT u.id, u.nom, u.photo_profile, 
+             MAX(m.timestamp) AS lastMessageTimestamp, 
+             (SELECT content FROM messages WHERE (sender_id = u.id AND receiver_id = ?) 
+              OR (sender_id = ? AND receiver_id = u.id) 
+              ORDER BY timestamp DESC LIMIT 1) AS lastMessage
+      FROM utilisateurs u
+      JOIN messages m ON (
+        (u.id = m.sender_id AND m.receiver_id = ?) OR
+        (u.id = m.receiver_id AND m.sender_id = ?)
+      )
+      WHERE m.receiver_id = ?  -- L'utilisateur est le destinataire des messages
+      GROUP BY u.id
+      ORDER BY lastMessageTimestamp DESC
+    `;
+  
+    db.query(getUsersQuery, [userId, userId, userId, userId, userId], (err, results) => {
+      if (err) {
+        console.error("Erreur lors de la requête SQL :", err);
+        return res.status(500).send("Erreur DB");
+      }
+  
+      if (results.length === 0) {
+        return res.render("artisan/messages", { conversations: [], message: 'Aucune conversation trouvée' });
+      }
+
+      const conversations = results.map(row => ({
+        id: row.id,
+        name: row.nom,
+        photo: row.photo_profile,
+        lastMessage: row.lastMessage || 'Aucun message' // Dernier message ou un message par défaut
+      }));
+  
+      res.render("artisan/messages", { conversations });
+    });
+});
+
+router.get("/messages/:id", checkArtisanAuth, (req, res) => {
+    const userId = req.session.userId;
+    const artisanId = req.params.id;
+  
+    const getConversationsQuery = `
+      SELECT DISTINCT u.id, u.nom, u.photo_profile
+      FROM utilisateurs u
+      JOIN messages m ON (u.id = m.sender_id OR u.id = m.receiver_id)
+      WHERE (m.sender_id = ? OR m.receiver_id = ?) AND u.id != ?
+      ORDER BY m.timestamp DESC
+    `;
+  
+    const getMessagesQuery = `
+      SELECT sender_id, content, timestamp
+      FROM messages
+      WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+      ORDER BY timestamp ASC
+    `;
+  
+    const getSelectedUserQuery = `
+      SELECT id, nom, photo_profile
+      FROM utilisateurs
+      WHERE id = ?
+    `;
+  
+    db.query(getConversationsQuery, [userId, userId, userId], (err, users) => {
+      if (err) return res.status(500).send("Erreur DB (conversations)");
+  
+      const conversations = users.map(row => ({
+        id: row.id,
+        name: `${row.nom}`,
+        photo: row.photo_profile
+      }));
+  
+      db.query(getMessagesQuery, [userId, artisanId, artisanId, userId], (err2, messages) => {
+        if (err2) return res.status(500).send("Erreur DB (messages)");
+  
+        const formattedMessages = messages.map(msg => ({
+          text: msg.content,
+          isMe: msg.sender_id === userId
+        }));
+  
+        db.query(getSelectedUserQuery, [artisanId], (err3, selectedUser) => {
+          if (err3 || selectedUser.length === 0) {
+            return res.status(500).send("Erreur DB (utilisateur sélectionné)");
+          }
+  
+          const selected = selectedUser[0];
+  
+          res.render("artisan/messages", {
+            conversations,
+            selectedConversation: {
+              id: selected.id,
+              name: ` ${selected.nom}`,
+              photo: selected.photo_profile,
+              messages: formattedMessages
+            }
+          });
+        });
+      });
+    });
+  });
+  
+  
+  // Route pour envoyer un message
+  router.post("/messages/:id", checkArtisanAuth, (req, res) => {
+    const userId = req.session.userId; // Utilisation de userId pour l'authentification
+    const receiverId = req.params.id;  // ID de l'artisan à qui l'utilisateur envoie un message
+    const content = req.body.message;
+  
+    // Vérification que le message n'est pas vide
+    if (!content) return res.redirect("/messages/" + receiverId);
+  
+    // Vérification si l'utilisateur et le destinataire existent
+    const checkUsersQuery = `
+      SELECT 1 FROM utilisateurs WHERE id = ? OR id = ?
+    `;
+    db.query(checkUsersQuery, [userId, receiverId], (err, results) => {
+      if (err) return res.status(500).send("Erreur DB");
+      if (results.length < 2) return res.status(404).send("Utilisateur non trouvé");
+  
+      // Insertion du nouveau message dans la base de données
+      const insertQuery = `
+        INSERT INTO messages (sender_id, receiver_id, content)
+        VALUES (?, ?, ?)
+      `;
+      db.query(insertQuery, [userId, receiverId, content], (err2) => {
+        if (err2) return res.status(500).send("Erreur envoi message");
+        res.redirect("/messages/" + receiverId);
+      });
+    });
+  });
+  
+  
+    
 module.exports = router;

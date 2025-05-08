@@ -27,16 +27,23 @@ router.get('/signup', (req, res) => {
 
 // Inscription d'un utilisateur
 router.post('/signup', (req, res) => {
-    const { nom, email, mot_de_passe, rôle, telephone, adresse, gouvernorat } = req.body;
+    const { nom, email, mot_de_passe, rôle, date_naissance } = req.body;
 
     // Validate required fields
-    if (!nom || !email || !mot_de_passe || !rôle || !telephone || !adresse || !gouvernorat) {
-        return res.json({ success: false, message: 'جميع الحقول مطلوبة' });
+    if (!nom || !email || !mot_de_passe || !rôle || !date_naissance) {
+        return res.json({ success: false, message: 'الرجاء إدخال جميع المعلومات المطلوبة' });
     }
 
-    // Validate phone number
-    if (telephone.length !== 8 || !/^\d+$/.test(telephone)) {
-        return res.json({ success: false, message: 'رقم الهاتف غير صالح' });
+    // Validate age (must be over 18)
+    const birthDate = new Date(date_naissance);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    if (age <= 18) {
+        return res.json({ success: false, message: 'يجب أن يكون عمرك أكبر من 18 سنة' });
     }
 
     // Validate email format
@@ -46,8 +53,8 @@ router.post('/signup', (req, res) => {
     }
 
     // Validate password length
-    if (mot_de_passe.length < 8) {
-        return res.json({ success: false, message: 'يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل' });
+    if (mot_de_passe.length <= 8) {
+        return res.json({ success: false, message: 'يجب أن تحتوي كلمة المرور على أكثر من 8 أحرف' });
     }
 
     // Check if user already exists
@@ -69,8 +76,8 @@ router.post('/signup', (req, res) => {
             }
 
             // Insert into database
-            const query = 'INSERT INTO utilisateurs (nom, email, mot_de_passe, rôle, telephone, adresse, gouvernorat) VALUES (?, ?, ?, ?, ?, ?, ?)';
-            db.query(query, [nom, email, hashedPassword, rôle, telephone, adresse, gouvernorat], (err) => {
+            const query = 'INSERT INTO utilisateurs (nom, email, mot_de_passe, rôle, date_naissance) VALUES (?, ?, ?, ?, ?)';
+            db.query(query, [nom, email, hashedPassword, rôle, date_naissance], (err) => {
                 if (err) {
                     console.error('Error adding user:', err);
                     return res.status(500).json({ success: false, message: 'خطأ في الخادم' });

@@ -17,11 +17,6 @@ router.get('/', (req, res) => {
 
 // Update the contact-us POST route to check for authentication
 router.post('/', (req, res) => {
-    // Check if user is logged in
-    if (!req.session.userId) {
-        return res.status(401).json({ success: false, message: 'يجب تسجيل الدخول للتواصل معنا' });
-    }
-    
     try {
         const { name, email, phone, message } = req.body;
         
@@ -30,11 +25,11 @@ router.post('/', (req, res) => {
             return res.status(400).json({ success: false, message: 'جميع الحقول مطلوبة' });
         }
         
-        // Insert into MySQL database using callback pattern
-        const query = 'INSERT INTO contacts (name, email, phone, message, user_id) VALUES (?, ?, ?, ?, ?)';
-        db.query(query, [name, email, phone || '', message, req.session.userId], (err, result) => {
+        // Insert into enquete table
+        const sql = 'INSERT INTO enquete (nom, email, num_tel, message) VALUES (?, ?, ?, ?)';
+        db.query(sql, [name, email, phone || '', message], (err, result) => {
             if (err) {
-                console.error('Error saving contact message:', err);
+                console.error('Error saving message:', err);
                 return res.status(500).json({ success: false, message: 'حدث خطأ أثناء معالجة طلبك' });
             }
             
@@ -42,7 +37,7 @@ router.post('/', (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error saving contact message:', error);
+        console.error('Error saving message:', error);
         res.status(500).json({ success: false, message: 'حدث خطأ أثناء معالجة طلبك' });
     }
 });

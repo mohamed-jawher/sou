@@ -527,7 +527,7 @@
                                      alt="صورة الحرفي"
                                      onerror="this.onerror=null; this.src='/img/avatar-default.png';">
                                 {{else}}
-                                <div class="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-white text-2xl font-bold">
+                                <div class="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
                                     {{substring nom 0 1}}
                                 </div>
                                 {{/if}}
@@ -569,21 +569,21 @@
                                     </p>
                                     <p class="flex items-center text-gray-600">
                                         <i class="fas fa-map-marker-alt w-6"></i>
-                                        <span id="artisanLocation">{{#if this.gouvernorat}}{{this.gouvernorat}}{{#if this.ville}}، {{this.ville}}{{/if}}{{else}}غير متوفر{{/if}}</span>
+                                        <span id="artisanLocation">{{#if artisan.gouvernorat}}{{artisan.gouvernorat}}{{#if artisan.ville}}، {{artisan.ville}}{{/if}}{{else}}غير متوفر{{/if}}</span>
                                     </p>
-                                    <div class="flex items-center space-x-4 mt-4">
-                                        {{#if this.facebook}}
-                                        <a href="{{this.facebook}}" target="_blank" class="text-blue-600 hover:text-blue-800">
+                                    <div class="flex items-center gap-6 mt-4">
+                                        {{#if artisan.facebook}}
+                                        <a href="{{artisan.facebook}}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800">
                                             <i class="fab fa-facebook-f text-2xl"></i>
                                         </a>
                                         {{/if}}
-                                        {{#if this.instagram}}
-                                        <a href="{{this.instagram}}" target="_blank" class="text-pink-600 hover:text-pink-800">
+                                        {{#if artisan.instagram}}
+                                        <a href="{{artisan.instagram}}" target="_blank" rel="noopener noreferrer" class="text-pink-600 hover:text-pink-800">
                                             <i class="fab fa-instagram text-2xl"></i>
                                         </a>
                                         {{/if}}
-                                        {{#if this.linkedin}}
-                                        <a href="{{this.linkedin}}" target="_blank" class="text-blue-700 hover:text-blue-900">
+                                        {{#if artisan.linkedin}}
+                                        <a href="{{artisan.linkedin}}" target="_blank" rel="noopener noreferrer" class="text-blue-700 hover:text-blue-900">
                                             <i class="fab fa-linkedin-in text-2xl"></i>
                                         </a>
                                         {{/if}}
@@ -612,7 +612,8 @@
                 <div>
                     <label class="block text-sm mb-2">التاريخ</label>
                     <input type="date" id="bookingDate" name="date" 
-                           class="w-full p-2 border rounded-lg" required>
+                           class="w-full p-2 border rounded-lg" required
+                           min="" onload="setMinDate(this)">
                 </div>
                 <div>
                     <label class="block text-sm mb-2">الوقت</label>
@@ -780,17 +781,17 @@
                 </p>
                 <div class="flex items-center gap-6 mt-4">
                     ${artisan.facebook ? `
-                        <a href="${artisan.facebook}" target="_blank" class="text-blue-600 hover:text-blue-800">
+                        <a href="${artisan.facebook}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800">
                             <i class="fab fa-facebook-f text-2xl"></i>
                         </a>
                     ` : ''}
                     ${artisan.instagram ? `
-                        <a href="${artisan.instagram}" target="_blank" class="text-pink-600 hover:text-pink-800">
+                        <a href="${artisan.instagram}" target="_blank" rel="noopener noreferrer" class="text-pink-600 hover:text-pink-800">
                             <i class="fab fa-instagram text-2xl"></i>
                         </a>
                     ` : ''}
                     ${artisan.linkedin ? `
-                        <a href="${artisan.linkedin}" target="_blank" class="text-blue-700 hover:text-blue-900">
+                        <a href="${artisan.linkedin}" target="_blank" rel="noopener noreferrer" class="text-blue-700 hover:text-blue-900">
                             <i class="fab fa-linkedin-in text-2xl"></i>
                         </a>
                     ` : ''}
@@ -1029,6 +1030,20 @@
             );
         }
     </script>
+</div>
+<!-- Set minimum date for booking -->
+<script>
+    function setMinDate(input) {
+        const today = new Date().toISOString().split('T')[0];
+        input.min = today;
+    }
+
+    // Call setMinDate when the document loads
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('bookingDate');
+        setMinDate(dateInput);
+    });
+</script>
 </body>
 
 </html>
@@ -1204,8 +1219,8 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{#if this.disponibilité}}bg-green-100 text-green-800{{else}}bg-red-100 text-red-800{{/if}}">
-                            {{#if this.disponibilité}}متاح{{else}}غير متاح{{/if}}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${artisan.disponibilité ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${artisan.disponibilité ? 'متاح' : 'غير متاح'}
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
@@ -1237,6 +1252,9 @@
     // Initialize the display
     document.addEventListener('DOMContentLoaded', () => {
         updateDisplay();
+        const dateInput = document.getElementById('bookingDate');
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.min = today;
     });
 </script>
 <script>

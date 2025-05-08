@@ -5,6 +5,7 @@ const authRoutes = require('./routes/auth');
 const clientRoutes = require('./routes/client');
 const artisanRoutes = require('./routes/artisan');
 const userRoutes = require('./routes/user');
+const passwordRoutes = require('./routes/password');
 const app = require('./server');
 
 // Try different ports if the default one is in use
@@ -29,6 +30,6 @@ const port = process.env.PORT || 3001;
 app.use('/auth', authRoutes);
 app.use('/client', clientRoutes);
 app.use('/artisan', artisanRoutes);
+app.use('/password', passwordRoutes);
 app.use('/', userRoutes);
-
 tryPort(port);

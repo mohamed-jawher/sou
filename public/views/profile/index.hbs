@@ -51,7 +51,7 @@
     </style>
 </head>
 
-<body class="bg-gray-50 font-sans" x-data="app()">
+<body class="bg-gray-50 font-sans" x-data="profileForm()">
     <div class="flex min-h-screen">
         <!-- Include the sidebar partial with active page set to 'profile' -->
         {{> artisanSidebar active="profile"}}
@@ -76,7 +76,7 @@
                         <div class="flex flex-col items-center">
                             <div class="relative group">
                                 <!-- Update the img src attribute in the profile photo section -->
-                                <img :src="formData.profilePhoto.preview || userData.photo_profile || '/img/default-avatar.png'" 
+                                <img :src="formData.profilePhoto.preview || (userData.img ? '/uploads/profiles/' + userData.img : '/img/default-avatar.png')" 
                                      class="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer"
                                      data-profile-image
                                      @click="document.getElementById('profilePhotoInput').click()">
@@ -94,7 +94,7 @@
                                 </button>
                                 <button type="button" @click="removeProfilePhoto" 
                                         class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center"
-                                        :disabled="!formData.profilePhoto.preview && !userData.photo_profile">
+                                        :disabled="!formData.profilePhoto.preview && !userData.img">
                                     <i class="fas fa-trash ml-2"></i>
                                     إزالة
                                 </button>
@@ -129,59 +129,63 @@
                                 <input type="text" class="w-full p-3 border rounded-lg input-focus bg-gray-50" 
                                        x-model="formData.address">
                             </div>
-                        </div>
-                        
-                        <div class="mt-6 pt-6 border-t border-gray-200">
-                            <h3 class="text-lg font-semibold text-slate-800 mb-4">تغيير كلمة المرور</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div class="space-y-2">
-                                    <label class="block font-medium text-gray-700">كلمة المرور الحالية</label>
-                                    <input type="password" class="w-full p-3 border rounded-lg input-focus bg-gray-50" 
-                                           x-model="formData.currentPassword">
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block font-medium text-gray-700">كلمة المرور الجديدة</label>
-                                    <input type="password" class="w-full p-3 border rounded-lg input-focus bg-gray-50" 
-                                           x-model="formData.newPassword">
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block font-medium text-gray-700">تأكيد كلمة المرور</label>
-                                    <input type="password" class="w-full p-3 border rounded-lg input-focus bg-gray-50" 
-                                           x-model="formData.confirmPassword">
-                                </div>
+                            <div class="space-y-2">
+                                <label class="block font-medium text-gray-700">الموقع</label>
+                                <input type="text" class="w-full p-3 border rounded-lg input-focus bg-gray-50" 
+                                       x-model="formData.localisation" placeholder="{{profile.localisation}}">
                             </div>
                         </div>
-                        
+
+                        <!-- Password Change Link -->
+                        <div class="mt-6 flex justify-end">
+                            <a href="/profile/password" class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                                <i class="fas fa-key ml-2"></i>
+                                تغيير كلمة المرور
+                            </a>
+                        </div>
+
                         <!-- Social Media Section -->
-                        <div class="mt-6 border-t border-gray-200 pt-6">
+                        <div class="mt-6 border-t border-gray-200 pt-6 profile-card bg-white p-6 rounded-xl shadow-sm social-media-section">
                             <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center">
                                 <i class="fas fa-share-alt text-blue-500 ml-2"></i>
                                 وسائل التواصل الاجتماعي
                             </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        <i class="fab fa-facebook text-blue-600 ml-2"></i>فيسبوك
-                                    </label>
-                                    <input type="text" x-model="formData.facebook" 
-                                           placeholder="اسم المستخدم في فيسبوك"
-                                           class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="space-y-2">
+                                    <label class="block font-medium text-gray-700">فيسبوك</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                                            <i class="fab fa-facebook"></i>
+                                        </span>
+                                        <input type="text" 
+                                               class="w-full p-3 pr-10 border rounded-lg input-focus bg-gray-50" 
+                                               x-model="formData.facebook"
+                                               placeholder="رابط الفيسبوك">
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        <i class="fab fa-instagram text-pink-600 ml-2"></i>انستغرام
-                                    </label>
-                                    <input type="text" x-model="formData.instagram" 
-                                           placeholder="اسم المستخدم في انستغرام"
-                                           class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <div class="space-y-2">
+                                    <label class="block font-medium text-gray-700">إنستغرام</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-pink-600">
+                                            <i class="fab fa-instagram"></i>
+                                        </span>
+                                        <input type="text" 
+                                               class="w-full p-3 pr-10 border rounded-lg input-focus bg-gray-50" 
+                                               x-model="formData.instagram"
+                                               placeholder="رابط الإنستغرام">
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        <i class="fab fa-linkedin text-blue-700 ml-2"></i>لينكد إن
-                                    </label>
-                                    <input type="text" x-model="formData.linkedin" 
-                                           placeholder="اسم المستخدم في لينكد إن"
-                                           class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <div class="space-y-2">
+                                    <label class="block font-medium text-gray-700">لينكد إن</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-800">
+                                            <i class="fab fa-linkedin"></i>
+                                        </span>
+                                        <input type="text" 
+                                               class="w-full p-3 pr-10 border rounded-lg input-focus bg-gray-50" 
+                                               x-model="formData.linkedin"
+                                               placeholder="رابط لينكد إن">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -191,7 +195,7 @@
                     <div class="profile-card bg-white p-6 rounded-xl shadow-sm" x-show="userData.role == 'artisan'">
                         <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
                             <i class="fas fa-tools text-blue-500 ml-2"></i>
-                            معلومات الحرفي
+                    تغيير  المهنة        
                         </h2>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -234,44 +238,6 @@
                         </div>
                     </div>
 
-                    <!-- Gallery Section (only for artisans) -->
-                    <div class="profile-card bg-white p-6 rounded-xl shadow-sm" x-show="userData.role === 'artisan'">
-                        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
-                            <i class="fas fa-images text-blue-500 ml-2"></i>
-                            معرض الأعمال
-                        </h2>
-                        
-                        <!-- Gallery Grid -->
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                            <!-- Gallery Items -->
-                            <template x-for="(image, index) in formData.gallery" :key="index">
-                                <div class="relative group aspect-square bg-gray-50 rounded-xl overflow-hidden">
-                                    <img :src="`/public/uploads/gallery/${image.filename}`" 
-                                         class="w-full h-full object-cover"
-                                         @error="$event.target.src = '/public/img/placeholder.jpg'"
-                                         :alt="`Gallery image ${index + 1}`">
-                                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <button type="button" class="p-2 bg-white rounded-full text-red-500 hover:text-red-700"
-                                                @click="removeImage(index)">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </template>
-
-                            <!-- Add Image Button -->
-                            <div class="aspect-square bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors"
-                                 @click="document.getElementById('galleryInput').click()">
-                                <div class="text-center">
-                                    <i class="fas fa-plus text-gray-400 text-2xl mb-2"></i>
-                                    <p class="text-sm text-gray-500">إضافة صورة</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Hidden File Input -->
-                        <input type="file" id="galleryInput" class="hidden" accept="image/*" multiple @change="uploadGalleryImages">
-                    </div>
 
                     <!-- Location Information -->
                     <div class="profile-card bg-white p-6 rounded-xl shadow-sm">
@@ -324,8 +290,63 @@
                         </div>
                     </div>
 
+                   
+
+
+                    <!-- Gallery Section -->
+                    <div class="mt-6 border-t border-gray-200 pt-6 profile-card bg-white p-6 rounded-xl shadow-sm"
+                         x-init="loadGallery()">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+                            <i class="fas fa-images text-blue-500 ml-2"></i>
+                            معرض الصور
+                        </h3>
+                        <!-- Gallery Grid -->
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <!-- Gallery Items -->
+                            <template x-for="(image, index) in gallery" :key="index">
+                                <div class="relative group aspect-square bg-white rounded-xl overflow-hidden border border-gray-200">
+                                    <img :src="'/uploads/gallery/' + image.filename" 
+                                         class="w-full h-full object-cover"
+                                         @error="$event.target.src = '/img/placeholder.jpg'"
+                                         :alt="`Gallery image ${index + 1}`">
+                                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <button type="button" class="p-2 bg-white rounded-full text-red-500 hover:text-red-700 hover:bg-gray-100 transition-colors"
+                                                @click.prevent="removeImage(index, image.filename)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Add Image Button -->
+                            <div class="aspect-square bg-white rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+                                 @click="$refs.galleryInput.click()">
+                                <div class="text-center">
+                                    <i class="fas fa-plus text-gray-400 text-2xl mb-2"></i>
+                                    <p class="text-sm text-gray-500">إضافة صورة</p>
+                                </div>
+                                <input type="file" x-ref="galleryInput" @change="uploadGalleryImages" 
+                                       accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" multiple>
+                            </div>
+                        </div>
+
+                        <!-- Gallery Loading State -->
+                        <div x-show="galleryLoading" class="flex justify-center items-center py-4">
+                            <i class="fas fa-spinner fa-spin text-blue-500 text-2xl"></i>
+                        </div>
+
+                        <!-- Gallery Error Message -->
+                        <div x-show="galleryError" class="mt-4 p-4 bg-red-100 text-red-700 rounded-lg">
+                            <p x-text="galleryError"></p>
+                        </div>
+                    </div>
+
+
                     <!-- Status Messages -->
-                    <div x-show="message.text" :class="`p-4 rounded-lg ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`">
+                    <div x-show="message.text" 
+                         x-transition
+                         :class="{'bg-green-100 text-green-700': message.type === 'success', 'bg-red-100 text-red-700': message.type === 'error'}"
+                         class="mt-4 p-3 rounded-lg">
                         <p x-text="message.text"></p>
                     </div>
 
@@ -345,61 +366,219 @@
     </div>
 
     <script>
-        function app() {
-            return {
-                userData: {
-                    role: '{{user.role}}',
-                    photo_profile: '{{user.photo_profile}}'
+        // Password Manager Component
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('passwordManager', () => ({
+                form: {
+                    currentPassword: '',
+                    newPassword: '',
+                    confirmPassword: ''
                 },
+                loading: false,
+                message: {
+                    text: '',
+                    type: ''
+                },
+                get canSubmit() {
+                    return this.form.currentPassword && 
+                           this.form.newPassword && 
+                           this.form.confirmPassword && 
+                           this.form.newPassword === this.form.confirmPassword &&
+                           !this.loading;
+                },
+                async changePassword() {
+                    if (!this.canSubmit) {
+                        if (!this.form.currentPassword || !this.form.newPassword || !this.form.confirmPassword) {
+                            this.message = {
+                                text: 'يرجى ملء جميع حقول كلمة المرور',
+                                type: 'error'
+                            };
+                        } else if (this.form.newPassword !== this.form.confirmPassword) {
+                            this.message = {
+                                text: 'كلمة المرور الجديدة وتأكيدها غير متطابقين',
+                                type: 'error'
+                            };
+                        }
+                        return;
+                    }
+
+                    this.loading = true;
+                    try {
+                        const response = await fetch('/password/change', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                currentPassword: this.form.currentPassword,
+                                newPassword: this.form.newPassword
+                            })
+                        });
+
+                        const result = await response.json();
+                        this.message = {
+                            text: result.message,
+                            type: result.success ? 'success' : 'error'
+                        };
+
+                        if (result.success) {
+                            // Clear form on success
+                            this.form = {
+                                currentPassword: '',
+                                newPassword: '',
+                                confirmPassword: ''
+                            };
+                        }
+                    } catch (error) {
+                        console.error('Error changing password:', error);
+                        this.message = {
+                            text: 'حدث خطأ في تغيير كلمة المرور',
+                            type: 'error'
+                        };
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            }));
+        });
+    
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('profileForm', () => ({
+                init() {
+                    this.loadGallery();
+                },
+                loading: false,
+                error: '',
+                message: '',
                 formData: {
-                    email: '{{user.email}}',
                     fullname: '{{user.name}}',
+                    email: '{{user.email}}',
                     phone: '{{user.telephone}}',
                     address: '{{user.adresse}}',
                     governorate: '{{user.gouvernorat}}',
-                    city: '{{user.city}}',
-                    postalCode: '{{user.postal_code}}',
-                    currentPassword: '',
-                    newPassword: '',
-                    confirmPassword: '',
-                    profession: '{{user.spécialité}}',
-                    otherProfession: '',
-                    experience: '{{user.expérience}}',
-                    hourlyRate: '{{user.tarif_horaire}}',
-                    description: '{{user.description}}',
+                    city: '{{user.ville}}',
+                    postalCode: '{{user.code_postal}}',
+                    localisation: '{{user.localisation}}',
                     facebook: '{{user.facebook}}',
                     instagram: '{{user.instagram}}',
                     linkedin: '{{user.linkedin}}',
                     profilePhoto: {
-                        preview: null,
-                        file: null
+                        file: null,
+                        preview: null
                     },
-                    gallery: []
+                    gallery: [],
+                    currentPassword: '',
+                    newPassword: '',
+                    confirmPassword: ''
                 },
-                loading: false,
-                message: '',
-                error: '',
 
-                async init() {
-                    if (this.userData.role === 'artisan') {
-                        await this.loadGallery();
+                userData: {
+                    img: '{{user.img}}'
+                },
+                gallery: [],
+                galleryLoading: false,
+                galleryError: null,
+                
+                async submitForm() {
+                    this.loading = true;
+                    this.error = '';
+                    this.message = '';
+
+                    try {
+                        const formData = new FormData();
+                        
+                        // Add basic form fields
+                        formData.append('fullname', this.formData.fullname); 
+                        formData.append('email', this.formData.email);
+                        formData.append('telephone', this.formData.phone);
+                        formData.append('adresse', this.formData.address);
+                        formData.append('gouvernorat', this.formData.governorate);
+                        formData.append('ville', this.formData.city);
+                        formData.append('code_postal', this.formData.postalCode);
+                        
+                        // Only append localisation if it has a value
+                        if (this.formData.localisation) {
+                            formData.append('localisation', this.formData.localisation);
+                        }
+
+                        // Add social media data - send current values or empty string
+                        formData.append('facebook', this.formData.facebook || '');
+                        formData.append('instagram', this.formData.instagram || '');
+                        formData.append('linkedin', this.formData.linkedin || '');
+
+                        // Add profile photo if changed
+                        if (this.formData.profilePhoto.file) {
+                            formData.append('profilePhoto', this.formData.profilePhoto.file);
+                        }
+
+                        console.log('Sending form data:', Object.fromEntries(formData));
+
+                        const response = await fetch('/profile/update-profile', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const result = await response.json();
+                        
+                        console.log('Server response:', result);
+                        
+                        if (result.success) {
+                            this.message = {
+                                text: result.message,
+                                type: 'success'
+                            };
+                            // Update local data with server response
+                            if (result.userData) {
+                                this.formData.fullname = result.userData.nom;
+                                this.formData.email = result.userData.email;
+                                this.formData.phone = result.userData.telephone;
+                                this.formData.address = result.userData.adresse;
+                                this.formData.governorate = result.userData.gouvernorat;
+                                this.formData.city = result.userData.ville;
+                                this.formData.postalCode = result.userData.code_postal;
+                                this.formData.localisation = result.userData.localisation;
+                                this.formData.facebook = result.userData.facebook || '';
+                                this.formData.instagram = result.userData.instagram || '';
+                                this.formData.linkedin = result.userData.linkedin || '';
+                            }
+                        } else {
+                            this.message = {
+                                text: result.message,
+                                type: 'error'
+                            };
+                        }
+                    } catch (error) {
+                        console.error('Error updating profile:', error);
+                        this.message = {
+                            text: 'حدث خطأ في تحديث الملف الشخصي',
+                            type: 'error'
+                        };
                     }
+
+                    this.loading = false;
                 },
 
                 async loadGallery() {
+                    this.galleryLoading = true;
+                    this.galleryError = null;
                     try {
                         const response = await fetch('/profile/gallery');
-                        const images = await response.json();
-                        this.formData.gallery = images;
+                        if (!response.ok) throw new Error('Failed to load gallery');
+                        const data = await response.json();
+                        this.gallery = data;
                     } catch (error) {
                         console.error('Error loading gallery:', error);
-                        this.error = 'حدث خطأ في تحميل معرض الصور';
+                        this.galleryError = 'حدث خطأ في تحميل معرض الصور';
+                    } finally {
+                        this.galleryLoading = false;
                     }
                 },
-
                 async uploadGalleryImages(event) {
                     const files = event.target.files;
                     if (!files.length) return;
+
+                    this.galleryLoading = true;
+                    this.galleryError = null;
 
                     const formData = new FormData();
                     Array.from(files).forEach(file => {
@@ -412,122 +591,57 @@
                             body: formData
                         });
 
+                        if (!response.ok) throw new Error('Failed to upload images');
                         const result = await response.json();
+
                         if (result.success) {
-                            this.formData.gallery = [...this.formData.gallery, ...result.images];
-                            this.message = result.message;
-                        } else {
-                            this.error = result.message;
+                            // Refresh gallery after upload
+                            await this.loadGallery();
+                            this.showMessage('تم رفع الصور بنجاح', 'success');
                         }
                     } catch (error) {
                         console.error('Error uploading images:', error);
-                        this.error = 'حدث خطأ في رفع الصور';
+                        this.galleryError = 'حدث خطأ في رفع الصور';
+                    } finally {
+                        this.galleryLoading = false;
+                        event.target.value = ''; // Clear the input
                     }
-
-                    event.target.value = ''; // Reset file input
                 },
+                async removeImage(index, filename) {
+                    if (!confirm('هل أنت متأكد من حذف هذه الصورة؟')) return;
 
-                async removeImage(index) {
-                    const image = this.formData.gallery[index];
-                    if (!image) return;
+                    this.galleryLoading = true;
+                    this.galleryError = null;
 
                     try {
-                        const response = await fetch(`/profile/gallery/${image.filename}`, {
+                        const response = await fetch(`/profile/gallery/${filename}`, {
                             method: 'DELETE'
                         });
 
+                        if (!response.ok) throw new Error('Failed to delete image');
                         const result = await response.json();
+
                         if (result.success) {
-                            this.formData.gallery.splice(index, 1);
-                            this.message = result.message;
-                        } else {
-                            this.error = result.message;
+                            this.gallery.splice(index, 1);
+                            this.showMessage('تم حذف الصورة بنجاح', 'success');
                         }
                     } catch (error) {
                         console.error('Error removing image:', error);
-                        this.error = 'حدث خطأ في حذف الصورة';
+                        this.galleryError = 'حدث خطأ في حذف الصورة';
+                    } finally {
+                        this.galleryLoading = false;
                     }
                 },
-
-                uploadProfilePhoto(event) {
-                    const file = event.target.files[0];
-                    if (!file) return;
-
-                    // Create preview
-                    this.formData.profilePhoto.file = file;
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        this.formData.profilePhoto.preview = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                },
-
-                async removeProfilePhoto() {
-                    if (!this.formData.profilePhoto.preview && !this.userData.photo_profile) return;
-
-                    try {
-                        const response = await fetch('/profile/remove-photo', {
-                            method: 'POST'
-                        });
-
-                        const result = await response.json();
-                        if (result.success) {
-                            this.formData.profilePhoto.preview = null;
-                            this.formData.profilePhoto.file = null;
-                            this.userData.photo_profile = '/img/avatar-placeholder.png';
-                            this.message = result.message;
-                        } else {
-                            this.error = result.message;
-                        }
-                    } catch (error) {
-                        console.error('Error removing profile photo:', error);
-                        this.error = 'حدث خطأ في حذف الصورة الشخصية';
-                    }
-                },
-
-                async submitForm() {
-                    this.loading = true;
-                    this.error = '';
-                    this.message = '';
-
-                    const formData = new FormData();
-                    
-                    // Add form fields
-                    Object.keys(this.formData).forEach(key => {
-                        if (key !== 'profilePhoto' && key !== 'gallery') {
-                            formData.append(key, this.formData[key]);
-                        }
-                    });
-
-                    // Add profile photo if changed
-                    if (this.formData.profilePhoto.file) {
-                        formData.append('profilePhoto', this.formData.profilePhoto.file);
-                    }
-
-                    try {
-                        const response = await fetch('/profile/update-profile', {
-                            method: 'POST',
-                            body: formData
-                        });
-
-                        const result = await response.json();
-                        if (result.success) {
-                            this.message = result.message;
-                            if (result.photo_profile) {
-                                this.userData.photo_profile = result.photo_profile;
-                            }
-                        } else {
-                            this.error = result.message;
-                        }
-                    } catch (error) {
-                        console.error('Error updating profile:', error);
-                        this.error = 'حدث خطأ في تحديث الملف الشخصي';
-                    }
-
-                    this.loading = false;
+                showMessage(text, type = 'success') {
+                    this.message = { text, type };
+                    setTimeout(() => {
+                        this.message = { text: '', type: '' };
+                    }, 3000);
                 }
-            };
-        }
+            }));
+        });
+
     </script>
+    {{> chatbot}}
 </body>
 </html>

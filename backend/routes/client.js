@@ -6,7 +6,7 @@ const { checkClientAuth,checkAuth } = require('../middleware/auth');
 router.get('/', (req, res) => {
     const query = `
         SELECT a.*, u.nom, u.email, u.photo_profile, u.telephone,
-               a.facebook, a.instagram, a.linkedin, u.gouvernorat, u.ville
+               u.facebook, u.instagram, u.linkedin, u.gouvernorat, u.ville
         FROM artisans a 
         JOIN utilisateurs u ON a.utilisateur_id = u.id
         WHERE u.rôle = 'artisan'
@@ -117,7 +117,8 @@ router.get('/cities/:gouvernorat', (req, res) => {
 router.get('/filter', (req, res) => {
     const { gouvernorat, ville, speciality } = req.query;
     let query = `
-        SELECT a.*, u.nom, u.email, u.photo_profile, u.gouvernorat, u.ville, u.telephone
+        SELECT a.*, u.nom, u.email, u.photo_profile, u.gouvernorat, u.ville, u.telephone,
+               u.facebook, u.instagram, u.linkedin
         FROM artisans a 
         JOIN utilisateurs u ON a.utilisateur_id = u.id
         WHERE u.rôle = 'artisan'
@@ -156,7 +157,10 @@ router.get('/filter', (req, res) => {
             rating: artisan.rating || 0,
             disponibilité: artisan.disponibilité || false,
             expérience: artisan.expérience,
-            photo_profile: artisan.photo_profile ? Buffer.from(artisan.photo_profile).toString('base64') : null
+            photo_profile: artisan.photo_profile ? Buffer.from(artisan.photo_profile).toString('base64') : null,
+            facebook: artisan.facebook,
+            instagram: artisan.instagram,
+            linkedin: artisan.linkedin
         }));
 
         res.json(formattedArtisans);
@@ -188,5 +192,6 @@ router.get('/get-gallery/:artisanId', (req, res) => {
         res.json(gallery);
     });
 });
+
 
 module.exports = router;

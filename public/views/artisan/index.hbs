@@ -39,6 +39,40 @@
             background-color: #f59e0b;
             border-radius: 0 4px 4px 0;
         }
+        input:checked ~ .dot {
+            transform: translateX(-24px);
+        }
+        input:checked ~ .block {
+            background-color: #10B981;
+        }
+        
+        .peer:checked ~ div #availabilityStatus {
+            background-color: #22C55E; /* green-500 */
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+        }
+        
+        /* Add smooth transition for the status indicator */
+        #availabilityStatus {
+            transition: all 0.3s ease;
+        }
+
+        /* Add pulse animation for active status */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+            }
+        }
+
+        .status-active {
+            background-color: #22C55E !important;
+            animation: pulse 2s infinite;
+        }
     </style>
 </head>
 
@@ -56,6 +90,7 @@
                     <p class="text-slate-600">نتمنى لك يوماً مثمراً</p>
                 </div>
                 <div class="flex space-x-4 space-x-reverse">
+                   
                     <div class="relative">
                         <button onclick="toggleNotifications(event)" class="px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 flex items-center">
                             <i class="fas fa-bell text-yellow-500 ml-2"></i>
@@ -71,6 +106,21 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Availability Toggle -->
+                    <div class="relative">
+                        <label class="flex items-center cursor-pointer bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50">
+                            <div class="relative inline-flex items-center">
+                                <input type="checkbox" id="availabilityToggle" class="sr-only peer" onchange="toggleAvailability(this)">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                <div class="flex items-center mr-3">
+                                    <span class="text-sm text-gray-700 ml-2">متاح للعمل</span>
+                                    <div id="availabilityStatus" class="w-2 h-2 rounded-full ml-2 bg-gray-400"></div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
                     <button onclick="openServiceModal()" class="px-4 py-2 bg-yellow-500 text-white rounded-lg shadow-sm hover:bg-yellow-600 flex items-center">
                         <i class="fas fa-plus ml-2"></i>
                         <span class="text-sm">إضافة خدمة</span>
@@ -156,7 +206,7 @@
                     الزبون نفسه.
                 </p>
                 <div class="mt-6 flex flex-wrap gap-4">
-                    <a href="/profile" class="px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors flex items-center">
+                    <a href="/profile/index" class="px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors flex items-center">
                         <i class="fas fa-user-edit ml-2"></i>
                         تحديث الملف الشخصي
                     </a>
@@ -224,6 +274,7 @@
             </form>
         </div>
     </div>
+    {{> chatbot}}
 
     <!-- Notification Panel -->
     <div id="notificationPanel" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none">
@@ -652,7 +703,60 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadReviews();
         });
+
+        async function toggleAvailability(checkbox) {
+            const statusDot = document.getElementById('availabilityStatus');
+            
+            try {
+                const response = await fetch('/artisan/toggle-availability', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        available: checkbox.checked ? 1 : null
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    if (checkbox.checked) {
+                        statusDot.classList.add('status-active');
+                    } else {
+                        statusDot.classList.remove('status-active');
+                    }
+                } else {
+                    // Revert the checkbox if the update failed
+                    checkbox.checked = !checkbox.checked;
+                    alert('حدث خطأ أثناء تحديث الحالة');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Revert the checkbox if there was an error
+                checkbox.checked = !checkbox.checked;
+                alert('حدث خطأ أثناء تحديث الحالة');
+            }
+        }
+
+        // Update the initial status check
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/artisan/availability-status');
+                const result = await response.json();
+                if (result.success) {
+                    const checkbox = document.getElementById('availabilityToggle');
+                    const statusDot = document.getElementById('availabilityStatus');
+                    checkbox.checked = result.available === 1;
+                    if (result.available === 1) {
+                        statusDot.classList.add('status-active');
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
     </script>
+    
 </body>
 
 </html>

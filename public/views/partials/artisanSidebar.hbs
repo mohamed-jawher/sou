@@ -1,57 +1,61 @@
-<aside class="w-72 bg-white shadow-xl h-screen sticky top-0">
+<aside class="w-72 bg-gradient-to-b from-slate-800 to-yellow-500 text-white shadow-xl h-screen sticky top-0">
     <div class="h-full flex flex-col">
         <!-- Logo Section -->
-        <div class="p-6 bg-gradient-to-r from-slate-800 to-slate-700">
-            <h1 class="text-2xl font-bold text-center text-white">
+        <div class="p-6 border-b border-yellow-400">
+            <h1 class="text-2xl font-bold text-center">
                 TN <span class="text-yellow-400">M3allim</span>
             </h1>
         </div>
 
         <!-- Profile Section -->
-        <div class="flex flex-col items-center py-8 bg-slate-50">
+        <div class="flex flex-col items-center py-8">
             <div class="relative">
-                <img class="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover" 
-                     src="{{#if user.photo_profile}}{{user.photo_profile}}{{else}}/img/avatar-placeholder.png{{/if}}" 
-                     alt="صورة الحرفي">
+                <img :src="photoPreview || (user.img ? '/uploads/profiles/' + user.img : '/img/default-avatar.png')"
+                     class="w-32 h-32 rounded-full object-cover border-4 border-white shadow"
+                     id="profile-image">
                 <span class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
             </div>
-            <h2 class="mt-4 text-xl font-bold text-slate-800">{{user.name}}</h2>
-            <p class="text-sm text-slate-500">حرفي متميز</p>
+            <h2 class="mt-4 text-xl font-bold">{{user.name}}</h2>
+            <p class="text-sm text-yellow-200">حرفي متميز</p>
         </div>
 
         <!-- Navigation -->
-        <nav class="flex-1 px-4 py-6 space-y-3">
-            <a href="/artisan" class="nav-link {{#if (eq active 'dashboard')}}active{{/if}} flex items-center p-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors group">
-                <i class="fas fa-tachometer-alt w-5 h-5 ml-3"></i>
-                <span>لوحة التحكم</span>
-            </a>
-            
-            <a href="/profile" class="nav-link {{#if (eq active 'profile')}}active{{/if}} flex items-center p-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors group">
-                <i class="fas fa-user-circle w-5 h-5 ml-3"></i>
-                <span>ملف الشخصي</span>
-            </a>
+       <nav class="flex-1 px-4 py-6 space-y-3">
+    <a href="/artisan" class="nav-link {{#if (eq active 'dashboard')}}bg-yellow-500{{/if}} flex items-center p-3 rounded-lg hover:bg-yellow-500 transition-colors">
+        <i class="fas fa-tachometer-alt w-5 h-5 ml-3"></i>
+        <span>لوحة التحكم</span>
+    </a>
+    
+    <a href="/profile/index" class="nav-link {{#if (eq active 'profile')}}bg-yellow-500{{/if}} flex items-center p-3 rounded-lg hover:bg-yellow-500 transition-colors">
+        <i class="fas fa-user-circle w-5 h-5 ml-3"></i>
+        <span>ملف الشخصي</span>
+    </a>
 
-            <a href="/artisan/reviews" 
-               class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100 {{#if (eq active 'reviews')}}active{{/if}}">
-                <i class="fas fa-star ml-3"></i>
-                <span>التقييمات</span>
-            </a>
+    <a href="/artisan/reviews" class="nav-link {{#if (eq active 'reviews')}}bg-yellow-500{{/if}} flex items-center p-3 rounded-lg hover:bg-yellow-500 transition-colors">
+        <i class="fas fa-star ml-3"></i>
+        <span>التقييمات</span>
+    </a>
 
-            <a href="/artisan/activities" class="nav-link flex items-center p-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors group">
-                <i class="fas fa-history ml-3"></i>
-                <span>آخر النشاطات</span>
-            </a>
+    <a href="/artisan/activities" class="nav-link {{#if (eq active 'activities')}}bg-yellow-500{{/if}} flex items-center p-3 rounded-lg hover:bg-yellow-500 transition-colors">
+        <i class="fas fa-history ml-3"></i>
+        <span>آخر النشاطات</span>
+    </a>
 
-            <a href="/report-problem" class="nav-link {{#if (eq active 'report')}}active{{/if}} flex items-center p-3 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors group">
-                <i class="fas fa-exclamation-triangle w-5 h-5 ml-3"></i>
-                <span>الإبلاغ عن مشكلة</span>
-            </a>
-        </nav>
+    <a href="/artisan/messages" class="nav-link {{#if (eq active 'messages')}}bg-yellow-500{{/if}} flex items-center p-3 rounded-lg hover:bg-yellow-500 transition-colors">
+        <i class="fas fa-envelope ml-3"></i>
+        <span>الرسائل</span>
+    </a>
+
+    <a href="/report-problem" class="nav-link {{#if (eq active 'report')}}bg-yellow-500{{/if}} flex items-center p-3 rounded-lg hover:bg-yellow-500 transition-colors">
+        <i class="fas fa-exclamation-triangle w-5 h-5 ml-3"></i>
+        <span>الإبلاغ عن مشكلة</span>
+    </a>
+</nav>
 
         <!-- Logout Button -->
-        <div class="p-4 border-t">
+        <div class="p-4 border-t border-yellow-400">
             <form action="/logout">
-                <button type="submit" class="w-full flex items-center justify-center p-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                <button type="submit" class="w-full flex items-center justify-center p-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
                     <i class="fas fa-sign-out-alt ml-2"></i>
                     <span>تسجيل الخروج</span>
                 </button>

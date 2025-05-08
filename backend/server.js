@@ -18,6 +18,7 @@ const contactRoutes = require('./routes/contact');
 const generalRoutes = require('./routes/general');
 const userRoutes = require('./routes/user');
 
+
 // Database connection (no longer needed with pool, but keep for backward compatibility)
 // db.connect((err) => {
 //     if (err) {
@@ -103,7 +104,7 @@ app.use('/', artisanRoutes);
 app.use('/', profileRoutes);
 // Serve static files
 app.use(express.static(path.join(__dirname, '..', 'public')));
-
+app.use('/uploads/profiles', express.static(path.join(__dirname, '..', 'public', 'uploads', 'profiles')));
 // Remove the duplicate export and server start
 // module.exports = app;
 

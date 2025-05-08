@@ -166,78 +166,26 @@
 
         <form id="signupForm" class="mt-6 space-y-4">
             <div>
-                <label class="block text-white/80 font-medium mb-1">الاسم الكامل</label>
+                <label class="block text-white/80 font-medium mb-1">الإسم الكامل</label>
                 <input type="text" name="nom"
                     class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
-                    placeholder="أدخل اسمك الكامل"
-                    required>
+                    placeholder="أدخل اسمك الكامل" required>
             </div>
 
             <div>
                 <label class="block text-white/80 font-medium mb-1">البريد الإلكتروني</label>
                 <input type="email" name="email"
                     class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
-                    placeholder="example@domain.com"
-                    required>
-                <p class="text-yellow-300 text-sm mt-1 hidden" id="emailError">يجب أن يحتوي البريد الإلكتروني على @</p>
+                    placeholder="example@email.com" required>
+                <p class="text-yellow-300 text-sm mt-1 hidden" id="emailError">صيغة البريد الإلكتروني غير صحيحة</p>
             </div>
 
             <div>
-                <label class="block text-white/80 font-medium mb-1">رقم الهاتف</label>
-                <input type="tel" name="telephone" pattern="[0-9]{8}"
-                    class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
-                    placeholder="مثال: 12345678" required>
-                <p class="text-yellow-300 text-sm mt-1 hidden" id="phoneError">يجب أن يتكون رقم الهاتف من 8 أرقام</p>
-            </div>
-
-            <div>
-                <label class="block text-white/80 font-medium mb-1">العنوان</label>
-                <input type="text" name="adresse"
-                    class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
-                    placeholder="أدخل عنوانك"
-                    required>
-            </div>
-
-            <div>
-                <label class="block text-white/80 font-medium mb-1">الولاية</label>
-                <select name="gouvernorat"
+                <label class="block text-white/80 font-medium mb-1">تاريخ الميلاد</label>
+                <input type="date" name="date_naissance"
                     class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
                     required>
-                    <option value="">اختر الولاية</option>
-                    <option value="tunis">تونس</option>
-                    <option value="ariana">أريانة</option>
-                    <option value="ben_arous">بن عروس</option>
-                    <option value="manouba">منوبة</option>
-                    <option value="nabeul">نابل</option>
-                    <option value="zaghouan">زغوان</option>
-                    <option value="bizerte">بنزرت</option>
-                    <option value="beja">باجة</option>
-                    <option value="jendouba">جندوبة</option>
-                    <option value="kef">الكاف</option>
-                    <option value="siliana">سليانة</option>
-                    <option value="sousse">سوسة</option>
-                    <option value="monastir">المنستير</option>
-                    <option value="mahdia">المهدية</option>
-                    <option value="sfax">صفاقس</option>
-                    <option value="kairouan">القيروان</option>
-                    <option value="kasserine">القصرين</option>
-                    <option value="sidi_bouzid">سيدي بوزيد</option>
-                    <option value="gabes">قابس</option>
-                    <option value="medenine">مدنين</option>
-                    <option value="tataouine">تطاوين</option>
-                    <option value="gafsa">قفصة</option>
-                    <option value="tozeur">توزر</option>
-                    <option value="kebili">قبلي</option>
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-white/80 font-medium mb-1">كلمة المرور</label>
-                <input type="password" name="mot_de_passe"
-                    class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
-                    placeholder="********"
-                    required>
-                <p class="text-yellow-300 text-sm mt-1 hidden" id="passwordError">يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل</p>
+                <p class="text-yellow-300 text-sm mt-1 hidden" id="ageError">يجب أن يكون عمرك أكبر من 18 سنة</p>
             </div>
 
             <div>
@@ -246,22 +194,33 @@
                     class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
                     required>
                     <option value="">اختر نوع الحساب</option>
-                    <option value="client">عميل</option>
+                    <option value="client">حريف</option>
                     <option value="artisan">حرفي</option>
                 </select>
             </div>
 
-            <div class="mt-8">
+            <div>
+                <label class="block text-white/80 font-medium mb-1">كلمة المرور</label>
+                <input type="password" name="mot_de_passe"
+                    class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
+                    placeholder="كلمة المرور" required>
+                <p class="text-yellow-300 text-sm mt-1 hidden" id="passwordError">يجب أن تحتوي كلمة المرور على أكثر من 8 أحرف</p>
+            </div>
+
+            <div>
+                <label class="block text-white/80 font-medium mb-1">تأكيد كلمة المرور</label>
+                <input type="password" name="confirm_password"
+                    class="w-full p-3 border border-white/30 bg-white/10 text-white rounded-lg focus:outline-none input-field"
+                    placeholder="تأكيد كلمة المرور" required>
+                <p class="text-yellow-300 text-sm mt-1 hidden" id="confirmPasswordError">كلمة المرور غير متطابقة</p>
+            </div>
+
+            <div class="mt-6">
                 <button type="submit"
-                    class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors hover-effect">
+                    class="w-full bg-yellow-500 text-white py-3 rounded-lg mt-4 hover:bg-yellow-600 transition duration-300 shadow-lg font-bold">
                     إنشاء حساب
                 </button>
             </div>
-
-            <p class="text-white/80 text-center mt-4">
-                لديك حساب بالفعل؟
-                <a href="/login" class="text-blue-400 hover:text-blue-300">تسجيل الدخول</a>
-            </p>
         </form>
 
         <script>
@@ -275,107 +234,77 @@
                     const formData = new FormData(this);
                     const data = Object.fromEntries(formData.entries());
 
-                    // Validate email
+                    // Reset error messages
+                    document.querySelectorAll('.input-field').forEach(field => {
+                        field.classList.remove('border-red-500');
+                    });
+                    document.querySelectorAll('p[id$="Error"]').forEach(error => {
+                        error.classList.add('hidden');
+                    });
+
+                    // Validate email format
                     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
                     const emailError = document.getElementById('emailError');
                     if (!emailRegex.test(data.email)) {
                         emailError?.classList.remove('hidden');
                         return;
-                    } else {
-                        emailError?.classList.add('hidden');
                     }
 
-                    // Validate password
+                    // Validate password length
                     const passwordError = document.getElementById('passwordError');
-                    if (data.mot_de_passe.length < 8) {
+                    if (data.mot_de_passe.length <= 8) {
                         passwordError?.classList.remove('hidden');
                         return;
-                    } else {
-                        passwordError?.classList.add('hidden');
                     }
 
-                    // Validate phone number
-                    const phoneError = document.getElementById('phoneError');
-                    if (data.telephone.length !== 8 || !/^\d+$/.test(data.telephone)) {
-                        phoneError?.classList.remove('hidden');
+                    // Validate password confirmation
+                    const confirmPasswordError = document.getElementById('confirmPasswordError');
+                    if (data.mot_de_passe !== data.confirm_password) {
+                        confirmPasswordError?.classList.remove('hidden');
                         return;
-                    } else {
-                        phoneError?.classList.add('hidden');
+                    }
+
+                    // Validate age (must be over 18)
+                    const ageError = document.getElementById('ageError');
+                    const birthDate = new Date(data.date_naissance);
+                    const today = new Date();
+                    let age = today.getFullYear() - birthDate.getFullYear();
+                    const monthDiff = today.getMonth() - birthDate.getMonth();
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                        age--;
+                    }
+                    if (age <= 18) {
+                        ageError?.classList.remove('hidden');
+                        return;
                     }
 
                     try {
                         const response = await fetch('/signup', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(data)
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                nom: data.nom,
+                                email: data.email,
+                                mot_de_passe: data.mot_de_passe,
+                                rôle: data.rôle,
+                                date_naissance: data.date_naissance
+                            }),
                         });
 
                         const result = await response.json();
 
                         if (result.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'تم إنشاء الحساب بنجاح',
-                                text: 'جاري التوجيه...',
-                                timer: 2000,
-                                showConfirmButton: false
-                            }).then(() => {
-                                window.location.href = '/login';
-                            });
+                            window.location.href = '/login';
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'خطأ',
-                                text: result.message
-                            });
+                            alert(result.message);
                         }
                     } catch (error) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'خطأ في الاتصال',
-                            text: 'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.'
-                        });
+                        console.error('Error:', error);
+                        alert('حدث خطأ أثناء إنشاء الحساب');
                     }
                 });
-
-                // Add input event listeners for real-time validation
-                const emailInput = document.querySelector('input[name="email"]');
-                const passwordInput = document.querySelector('input[name="mot_de_passe"]');
-                const phoneInput = document.querySelector('input[name="telephone"]');
-
-                if (emailInput) {
-                    emailInput.addEventListener('input', function() {
-                        const emailError = document.getElementById('emailError');
-                        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-                        if (!emailRegex.test(this.value)) {
-                            emailError?.classList.remove('hidden');
-                        } else {
-                            emailError?.classList.add('hidden');
-                        }
-                    });
-                }
-
-                if (passwordInput) {
-                    passwordInput.addEventListener('input', function() {
-                        const passwordError = document.getElementById('passwordError');
-                        if (this.value.length < 8) {
-                            passwordError?.classList.remove('hidden');
-                        } else {
-                            passwordError?.classList.add('hidden');
-                        }
-                    });
-                }
-
-                if (phoneInput) {
-                    phoneInput.addEventListener('input', function() {
-                        const phoneError = document.getElementById('phoneError');
-                        if (this.value.length !== 8 || !/^\d+$/.test(this.value)) {
-                            phoneError?.classList.remove('hidden');
-                        } else {
-                            phoneError?.classList.add('hidden');
-                        }
-                    });
-                }
             });
         </script>
     </div>

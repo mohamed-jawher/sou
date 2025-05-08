@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قائمة المستخدمين - TN M3allim</title>
+    <title>قائمة الحرفاء - TN M3allim</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -21,8 +21,8 @@
     <main class="flex-1 p-4 md:p-8 mt-16 md:mt-0 overflow-auto">
         <!-- Header Section -->
         <div class="mb-6">
-            <h2 class="text-3xl font-bold text-slate-800">قائمة المستخدمين</h2>
-            <p class="text-slate-500 mt-2">إدارة وعرض جميع المستخدمين في النظام</p>
+            <h2 class="text-3xl font-bold text-slate-800">قائمة الحرفاء</h2>
+            <p class="text-slate-500 mt-2">إدارة وعرض جميع الحرفاء في النظام</p>
         </div>
 
         <!-- Stats Cards -->
@@ -33,14 +33,14 @@
                         <i class="fas fa-users text-blue-500 text-xl"></i>
                     </div>
                     <div class="ml-4">
-                        <div class="text-3xl font-extrabold text-slate-800" id="totalUsersNumber">
-                            {{#if totalUsers}}
-                                {{totalUsers}}
+                        <div class="text-3xl font-extrabold text-slate-800" id="totalClients">
+                            {{#if totalClients}}
+                                {{totalClients}}
                             {{else}}
                                 0
                             {{/if}}
                         </div>
-                        <div class="text-slate-500 text-sm mt-1">إجمالي جميع المستخدمين</div>
+                        <div class="text-slate-500 text-sm mt-1">إجمالي الحرفاء الحرفاء</div>
                     </div>
                 </div> 
             </div>
@@ -51,13 +51,13 @@
                     </div>
                     <div class="ml-4">
                         <div class="text-2xl font-bold text-slate-800" id="activeUsersNumber">
-                            {{#if activeUsers}}
-                                {{activeUsers}}
+                            {{#if activeClients}}
+                                {{activeClients}}
                             {{else}}
                                 0
                             {{/if}}
                         </div>
-                        <div class="text-slate-500">المستخدمين النشطين</div>
+                        <div class="text-slate-500">العملاء النشطين</div>
                     </div>
                 </div>
             </div>
@@ -82,7 +82,7 @@
                 <div class="flex justify-between items-center mb-6">
                     <div class="flex items-center gap-2">
                         <i class="fas fa-list text-slate-400"></i>
-                        <h3 class="text-lg font-semibold text-slate-800">جميع المستخدمين</h3>
+                        <h3 class="text-lg font-semibold text-slate-800">جميع الحرفاء</h3>
                     </div>
                     <button id="openAddUserModal" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200">
                         <i class="fas fa-plus"></i>
@@ -120,13 +120,18 @@
             <input type="email" name="email" required class="w-full border rounded px-3 py-2">
           </div>
           <div>
+            <label class="block mb-1">رقم الهاتف</label>
+            <input type="tel" name="telephone" required class="w-full border rounded px-3 py-2">
+          </div>
+          <div>
             <label class="block mb-1">كلمة المرور</label>
             <input type="password" name="mot_de_passe" required class="w-full border rounded px-3 py-2">
           </div>
           <div>
-            <label class="block mb-1">الدور</label>
-            <select name="rôle" required class="w-full border rounded px-3 py-2">
-              <option value="client">عميل</option>
+            <label class="block mb-1">نوع المستخدم</label>
+            <select name="role" required class="w-full border rounded px-3 py-2">
+              <option value="">اختر نوع المستخدم</option>
+              <option value="client">حريف</option>
               <option value="artisan">حرفي</option>
               <option value="admin">مدير</option>
             </select>
@@ -143,7 +148,7 @@
     <!-- All Users Modal -->
     <div id="allUsersModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl max-h-[80vh] overflow-auto">
-            <h3 class="text-xl font-semibold mb-4">جميع المستخدمين</h3>
+            <h3 class="text-xl font-semibold mb-4">جميع الحرفاء</h3>
             <table class="min-w-full border text-sm">
                 <thead>
                     <tr class="bg-gray-100">
@@ -218,10 +223,6 @@
                         render: function(data, type, row) {
                             return `
                                 <div class="flex justify-end gap-3">
-                                    <button onclick="viewClient('${row.id}')" 
-                                        class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1 rounded-md transition-colors duration-200">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
                                     <button onclick="deleteUser('${row.id}', '${row.nom}')" 
                                         class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1 rounded-md transition-colors duration-200">
                                         <i class="fas fa-trash"></i>
@@ -261,31 +262,48 @@
             // Submit form
             $('#addUserForm').submit(function(e) {
                 e.preventDefault();
-                const formData = $(this).serializeArray();
-                // Map form fields to match /signup route
-                const data = {
-                  name: formData.find(f => f.name === 'nom').value,
-                  email: formData.find(f => f.name === 'email').value,
-                  password: formData.find(f => f.name === 'mot_de_passe').value,
-                  role: formData.find(f => f.name === 'rôle').value
+                
+                // Get form data
+                const formData = {
+                    nom: $('[name="nom"]').val(),
+                    email: $('[name="email"]').val(),
+                    telephone: $('[name="telephone"]').val(),
+                    mot_de_passe: $('[name="mot_de_passe"]').val(),
+                    rôle: $('[name="role"]').val()  
                 };
+
+                // Check if all required fields are filled
+                if (!formData.nom || !formData.email || !formData.telephone || !formData.mot_de_passe || !formData.rôle) {
+                    $('#addUserError').removeClass('hidden').text('جميع الحقول مطلوبة');
+                    return;
+                }
+
+                // Send POST request to add user
                 $.ajax({
-                  url: '/signup',
-                  method: 'POST',
-                  data: data,
-                  success: function(res) {
-                    if(res.success) {
-                      $('#addUserModal').addClass('hidden');
-                      $('#addUserForm')[0].reset();
-                      $('#clientTable').DataTable().ajax.reload();
-                      showNotification('تمت إضافة المستخدم بنجاح!');
-                    } else {
-                      $('#addUserError').removeClass('hidden').text(res.message || 'حدث خطأ');
+                    url: '/admin/user',
+                    method: 'POST',
+                    data: formData,
+                    success: function(res) {
+                        if (res.success) {
+                            // Hide modal and reset form
+                            $('#addUserModal').addClass('hidden');
+                            $('#addUserForm')[0].reset();
+                            $('#addUserError').addClass('hidden');
+                            
+                            // Show success message
+                            alert('تم إضافة المستخدم بنجاح');
+                            
+                            // Refresh the table
+                            $('#clientTable').DataTable().ajax.reload();
+                        } else {
+                            $('#addUserError').removeClass('hidden').text(res.error || 'حدث خطأ');
+                        }
+                    },
+                    error: function(xhr) {
+                        const errorMsg = xhr.responseJSON?.error || 'حدث خطأ أثناء الإضافة';
+                        $('#addUserError').removeClass('hidden').text(errorMsg);
+                        console.error('Error response:', xhr.responseJSON);
                     }
-                  },
-                  error: function(xhr) {
-                    $('#addUserError').removeClass('hidden').text('حدث خطأ أثناء الإضافة');
-                  }
                 });
             });
 
@@ -306,7 +324,7 @@
                         return `<tr>
                           <td class="border px-2 py-1">${user.nom || ''}</td>
                           <td class="border px-2 py-1">${user.email || ''}</td>
-                          <td class="border px-2 py-1">${user.rôle || ''}</td>
+                          <td class="border px-2 py-1">${user.role || ''}</td>
                           <td class="border px-2 py-1">${user.actif === 1 ? 'نشط' : 'غير نشط'}</td>
                           <td class="border px-2 py-1">${user.created_at ? user.created_at.split('T')[0] : ''}</td>
                         </tr>`;
@@ -317,7 +335,7 @@
                     }
                   },
                   error: function() {
-                    $('#allUsersTableBody').html('<tr><td colspan="5" class="text-center py-4 text-red-600">حدث خطأ أثناء جلب المستخدمين</td></tr>');
+                    $('#allUsersTableBody').html('<tr><td colspan="5" class="text-center py-4 text-red-600">حدث خطأ أثناء جلب الحرفاء</td></tr>');
                   }
                 });
             });
@@ -463,5 +481,6 @@
             });
         });
     </script>
+    {{> chatbot}}
 </body>
 </html>

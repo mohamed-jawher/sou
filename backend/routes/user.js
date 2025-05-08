@@ -6,6 +6,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
+const moment = require('moment');
+
 
 // Ensure uploads directory exists
 const uploadDir = path.join(__dirname, '..', '..', 'public', 'uploads', 'profiles');
@@ -246,5 +248,102 @@ router.post('/user-dashboard/cancel-booking/:id', checkAuth, (req, res) => {
         res.json({ success: true, message: 'تم إلغاء الحجز بنجاح' });
     });
 });
+
+
+// MESSAGERIE CLIENT - ARTISAN
+router.get('/user-dashboard/messages', checkAuth, (req, res) => {
+    const userId = req.session.userId;
+    const receiverId = req.query.with;
+
+    // Requête pour récupérer tous les artisans
+    const artisanQuery = `SELECT id, nom, photo_profile FROM utilisateurs WHERE rôle = 'artisan'`;
+
+    db.query(artisanQuery, (errArtisan, artisans) => {
+        if (errArtisan) {
+            console.error(errArtisan);
+            return res.status(500).send("Erreur serveur lors de la récupération des artisans.");
+        }
+
+        // Si aucun artisan sélectionné, afficher uniquement la liste sans messages
+        if (!receiverId) {
+            return res.render('user-dashboard/messages', {
+                messages: [],
+                receiverId: null,
+                receiverName: null,
+                artisans
+            });
+        }
+
+        // Requête pour les messages entre utilisateur connecté et artisan sélectionné
+        const queryMessages = `
+            SELECT 
+                sender_id, receiver_id, content, timestamp,
+                sender_id = ? AS fromUser
+            FROM messages
+            WHERE 
+                (sender_id = ? AND receiver_id = ?)
+                OR
+                (sender_id = ? AND receiver_id = ?)
+            ORDER BY timestamp ASC
+        `;
+
+        db.query(queryMessages, [userId, userId, receiverId, receiverId, userId], (errMessages, rawMessages) => {
+            if (errMessages) {
+                console.error(errMessages);
+                return res.status(500).send("Erreur serveur lors de la récupération des messages.");
+            }
+
+            // Formater les dates des messages avec moment
+            const messages = rawMessages.map(msg => ({
+                ...msg,
+                timestamp: moment(msg.timestamp).format('YYYY-MM-DD HH:mm') // Format choisi ici
+            }));
+
+            // Requête pour récupérer le nom du correspondant (artisan)
+            const queryUser = `SELECT nom FROM utilisateurs WHERE id = ?`;
+            db.query(queryUser, [receiverId], (errName, result) => {
+                if (errName) {
+                    console.error(errName);
+                    return res.status(500).send("Erreur serveur lors de la récupération du nom.");
+                }
+
+                const receiver = result[0];
+
+                res.render('user-dashboard/messages', {
+                    messages,
+                    receiverId,
+                    receiverName: receiver ? receiver.nom : 'مستخدم',
+                    artisans
+                });
+            });
+        });
+    });
+});
+
+// ✅ Envoyer un message
+router.post('/user-dashboard/messages/send', checkAuth, (req, res) => {
+    const senderId = req.session.userId;
+    const { receiverId, message } = req.body;
+
+    if (!message || !receiverId) {
+        return res.status(400).send('Données invalides');
+    }
+
+    const insertQuery = `
+        INSERT INTO messages (sender_id, receiver_id, content)
+        VALUES (?, ?, ?)
+    `;
+
+    db.query(insertQuery, [senderId, receiverId, message], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Erreur lors de l'envoi");
+        }
+
+        res.redirect(`/user-dashboard/messages?with=${receiverId}`);
+    });
+});
+
+
 
 module.exports = router;
